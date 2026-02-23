@@ -1,15 +1,29 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import { fileURLToPath } from "url";
-import viteConfig from "../vite.config";
-import { nanoid } from "nanoid";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const viteLogger = createLogger();
+// Conditionally import vite modules only in development
+let createViteServer: any = null;
+let createLogger: any = null;
+let viteConfig: any = null;
+let nanoid: any = null;
+
+if (process.env.NODE_ENV === "development") {
+  const vite = await import("vite");
+  const config = await import("../vite.config");
+  const nano = await import("nanoid");
+
+  createViteServer = vite.createServer;
+  createLogger = vite.createLogger;
+  viteConfig = config.default;
+  nanoid = nano.nanoid;
+}
+
+const viteLogger = process.env.NODE_ENV === "development" ? createLogger() : null;
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -23,6 +37,10 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  if (process.env.NODE_ENV !== "development" || !createViteServer) {
+    throw new Error("setupVite can only be called in development mode");
+  }
+
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
