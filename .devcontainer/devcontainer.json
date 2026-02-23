@@ -44,9 +44,9 @@
     }
   },
 
-  "forwardPorts": [5000, 5432],
+  "forwardPorts": [3000, 5432],
   "portsAttributes": {
-    "5000": {
+    "3000": {
       "label": "App (Express + Vite)",
       "onAutoForward": "openBrowser"
     },
@@ -61,6 +61,6 @@
   "remoteEnv": {
     "DATABASE_URL": "postgresql://postgres:postgres@db:5432/safetyplan",
     "NODE_ENV": "development",
-    "PORT": "5000"
+    "PORT": "6666"
   }
 }

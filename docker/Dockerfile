@@ -45,11 +45,11 @@ COPY --from=builder --chown=nodejs:nodejs /app/shared ./shared
 USER nodejs
 
 # Expose port
-EXPOSE 5000
+EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
