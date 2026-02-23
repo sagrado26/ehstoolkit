@@ -3,11 +3,9 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
-
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
   },
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -43,8 +41,10 @@
       }
     }
   },
-
-  "forwardPorts": [3000, 5432],
+  "forwardPorts": [
+    3000,
+    5432
+  ],
   "portsAttributes": {
     "3000": {
       "label": "App (Express + Vite)",
@@ -55,9 +55,7 @@
       "onAutoForward": "ignore"
     }
   },
-
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-
   "remoteEnv": {
     "DATABASE_URL": "postgresql://postgres:postgres@db:5432/safetyplan",
     "NODE_ENV": "development",
