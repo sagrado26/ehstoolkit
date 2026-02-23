@@ -49,10 +49,14 @@ npm install
 # Set up database (choose one option):
 
 # Option A: Docker PostgreSQL (Recommended)
-docker-compose -f .devcontainer/docker-compose.yml up -d
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/safetyplan"
+docker-compose -f docker/docker-compose.dev.yml up -d
+export DATABASE_URL="postgresql://postgres:password@localhost:5432/ehs_safety_dev"
 
-# Option B: Neon PostgreSQL (Cloud)
+# Option B: Local PostgreSQL
+# Install PostgreSQL locally and create database
+export DATABASE_URL="postgresql://user:pass@localhost:5432/ehs_safety"
+
+# Option C: Neon PostgreSQL (Cloud)
 # Create account at neon.tech and get connection string
 export DATABASE_URL="your_neon_connection_string"
 
@@ -61,6 +65,22 @@ npm run db:push
 
 # Start development server
 npm run dev
+```
+
+Visit `http://localhost:5000` to access the application.
+
+### Option 3: Docker Production
+```bash
+# Clone and navigate to docker directory
+git clone https://github.com/sagrado26/ehstoolkit.git
+cd ehs-toolkit/docker
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your production values
+
+# Start full stack
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 Visit `http://localhost:5000` to access the application.
@@ -144,7 +164,18 @@ The application uses **10 core tables** with comprehensive relationships:
 
 ## 🚀 Deployment Options
 
-### 1. Railway (Easiest Full-Stack)
+### 1. Docker (Recommended for Production)
+```bash
+# Production deployment with Docker Compose
+cd docker
+cp .env.example .env
+# Edit .env with your production values
+docker-compose -f docker-compose.prod.yml up -d
+```
+**Cost**: Variable (infrastructure) | **Setup**: 10 minutes
+**Benefits**: Full control, scalable, consistent environments
+
+### 2. Railway (Easiest Full-Stack)
 ```bash
 # Connect GitHub repo to Railway
 # Auto-detects Node.js + PostgreSQL
@@ -152,7 +183,7 @@ The application uses **10 core tables** with comprehensive relationships:
 ```
 **Cost**: $5-10/month | **Setup**: 5 minutes
 
-### 2. Render (Managed Services)
+### 3. Render (Managed Services)
 ```bash
 # Web Service + PostgreSQL database
 # Auto-deployment from GitHub
@@ -160,7 +191,7 @@ The application uses **10 core tables** with comprehensive relationships:
 ```
 **Cost**: $14/month | **Setup**: 10 minutes
 
-### 3. Fly.io (Docker Native)
+### 4. Fly.io (Docker Native)
 ```bash
 # Uses existing Docker configuration
 # Global deployment with low latency
@@ -168,7 +199,7 @@ The application uses **10 core tables** with comprehensive relationships:
 ```
 **Cost**: $5-15/month | **Setup**: 15 minutes
 
-### 4. DigitalOcean App Platform
+### 5. DigitalOcean App Platform
 ```bash
 # Flexible infrastructure
 # Custom domains and SSL

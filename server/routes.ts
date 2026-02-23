@@ -8,6 +8,15 @@ import { registerIncidentRoutes } from "./routes/incidents";
 import { registerDocumentRoutes } from "./routes/documents";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  });
+
   registerSafetyPlanRoutes(app);
   registerPermitRoutes(app);
   registerCraneInspectionRoutes(app);
