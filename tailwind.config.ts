@@ -11,6 +11,14 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
+        // Brand colors — matching code.html reference
+        brand: {
+          dark: '#002060',     // Dark blue for sidebar
+          light: '#254a9e',    // Lighter blue for active states
+          teal: '#288498',     // Teal for safety concern badges
+          red: '#B91C1C',      // Red for High Risk text
+        },
+        // status colors are defined below with sidebar
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
@@ -76,6 +84,7 @@ export default {
           border: "var(--sidebar-accent-border)"
         },
         status: {
+          pending: '#1e3a8a',
           online: "rgb(34 197 94)",
           away: "rgb(245 158 11)",
           busy: "rgb(239 68 68)",
@@ -83,9 +92,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        sans: ["var(--font-sans)", "sans-serif"],
+        serif: ["var(--font-serif)", "ui-serif", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       keyframes: {
         "accordion-down": {

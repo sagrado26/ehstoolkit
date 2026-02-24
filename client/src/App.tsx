@@ -5,10 +5,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { SidebarProvider } from "@/hooks/use-sidebar";
 import { AppShell } from "@/components/layout/AppShell";
 import NotFound from "@/pages/not-found";
-import DashboardPage from "@/pages/DashboardPage";
 
+const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const SafetyPlanPage = lazy(() => import("@/pages/SafetyPlanPage"));
 const PermitToWorkPage = lazy(() => import("@/pages/PermitToWorkPage"));
 const CraneInspectionPage = lazy(() => import("@/pages/CraneInspectionPage"));
@@ -41,12 +42,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <AppShell>
-            <Toaster />
-            <Router />
-          </AppShell>
-        </TooltipProvider>
+        <SidebarProvider>
+          <TooltipProvider>
+            <AppShell>
+              <Toaster />
+              <Router />
+            </AppShell>
+          </TooltipProvider>
+        </SidebarProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -180,16 +180,11 @@ export function SignOffStep({
   const linkedPermit = permits.find(p => p.id === linkedPermitId);
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-md bg-primary/10">
-          <PenLine className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h2 className="font-semibold">Sign Off</h2>
-          <p className="text-sm text-muted-foreground">Names and final comment</p>
-        </div>
+    <div className="space-y-4">
+      {/* Compact header */}
+      <div className="flex items-center gap-2">
+        <PenLine className="w-4 h-4 text-primary shrink-0" />
+        <h2 className="text-sm font-semibold text-foreground">Sign Off</h2>
       </div>
 
       {/* Lead + Manager side by side */}

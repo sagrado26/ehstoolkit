@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
@@ -78,11 +78,12 @@ export function IncidentList({ onNew }: Props) {
   }, [incidents, search, statusFilter, severityFilter]);
 
   const sorted = useMemo(() => sortRows(filtered, sort.field, sort.dir), [filtered, sort]);
-  const handleSort = (field: string) => setSort(prev => nextSort(prev.field, prev.dir, field));
+  /* rule: rerender-functional-setstate — stable callback refs */
+  const handleSort = useCallback((field: string) => setSort(prev => nextSort(prev.field, prev.dir, field)), []);
+  const handleSearch = useCallback((val: string) => { setSearch(val); setPage(1); }, []);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paged = showAll ? sorted : sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const handleSearch = (val: string) => { setSearch(val); setPage(1); };
 
   const show = (key: string) => colVisible[key] !== false;
 
@@ -90,7 +91,7 @@ export function IncidentList({ onNew }: Props) {
     <Card className="overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold">Incidents</h1>
+          <h1 className="text-xl font-bold text-gray-900">Incidents</h1>
           <p className="text-sm text-muted-foreground">
             Incident tracker &middot; {(incidents as any[]).length} record{(incidents as any[]).length !== 1 ? "s" : ""}
           </p>
@@ -122,7 +123,7 @@ export function IncidentList({ onNew }: Props) {
           {isAdmin && (
             <ColumnToggle columns={COLUMNS} visible={colVisible} onChange={setColVisible} />
           )}
-          <Button onClick={onNew} className="gap-2">
+          <Button onClick={onNew} className="gap-2 bg-brand-dark hover:bg-brand-dark/90">
             <Plus className="h-4 w-4" /> Report Incident
           </Button>
         </div>
@@ -253,7 +254,7 @@ export function IncidentList({ onNew }: Props) {
                     const sev = severityConfig[i.severity] || severityConfig[1];
                     const stat = statusConfig[i.status] || statusConfig.open;
                     return (
-                      <tr key={i.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors">
+                      <tr key={i.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-all table-row-virtualized group/row">
                         {show("date") && <td className="py-3.5 px-5 text-sm text-muted-foreground">{i.date}</td>}
                         {show("type") && <td className="py-3.5 px-5 text-sm font-medium capitalize">{i.type?.replace("-", " ")}</td>}
                         {show("location") && <td className="py-3.5 px-5 text-sm">{i.location}</td>}

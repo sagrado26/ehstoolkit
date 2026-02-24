@@ -21,7 +21,7 @@ export default function PermitToWorkPage() {
 
   if (showForm) {
     return (
-      <div className="p-4 sm:p-6 h-full max-w-5xl">
+      <div className="h-full max-w-5xl">
         <PermitForm
           onSubmit={data => createMutation.mutate(data)}
           onCancel={() => setShowForm(false)}
@@ -32,7 +32,7 @@ export default function PermitToWorkPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div>
       <PermitList onNew={() => setShowForm(true)} />
     </div>
   );

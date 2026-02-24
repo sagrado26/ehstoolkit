@@ -1,0 +1,22 @@
+[
+    {
+        "query": "What are the required PPE for high-voltage electrical work?",
+        "ground_truth": "Required PPE includes arc-rated clothing, insulated gloves (Class 0 or higher), face shield, and safety goggles as per NFPA 70E."
+    },
+    {
+        "query": "How should I store hazardous chemicals on site?",
+        "ground_truth": "Chemicals must be stored in secondary containment, away from incompatible substances, and labeled correctly according to GHS standards."
+    },
+    {
+        "query": "What is the procedure for reporting a near-miss incident?",
+        "ground_truth": "Stop work immediately, secure the area, and report to the EHS manager within 24 hours using the Incident Report Form."
+    },
+    {
+        "query": "Who is authorized to sign off on a Hot Work permit?",
+        "ground_truth": "Only a certified EHS officer or a designated Area Manager is authorized to sign off on Hot Work permits."
+    },
+    {
+        "query": "Does a crane inspection require a specialized certification?",
+        "ground_truth": "Yes, crane inspections must be performed by a competent person with specific crane safety certification as per OSHA/ISO standards."
+    }
+]

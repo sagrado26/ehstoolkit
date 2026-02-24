@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { StepperBar } from "@/features/safety-plan/components/StepperBar";
 import { InitialDetailsStep } from "@/features/safety-plan/components/InitialDetailsStep";
@@ -66,6 +66,7 @@ export default function SafetyPlanPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
 
+  /* rule: async-parallel — fetch independent data in parallel */
   const { data: preferences } = useQuery<{
     isFirstTime: string;
     system: string;
@@ -75,19 +76,22 @@ export default function SafetyPlanPage() {
     queryKey: ["/api/user-preferences", "default"],
   });
 
-  const { data: existingPlans = [] } = useQuery<SafetyPlan[]>({
-    queryKey: ["/api/safety-plans"],
-  });
+  const [
+    { data: existingPlans = [] },
+    { data: permits = [] },
+  ] = useQueries({
+    queries: [
+      { queryKey: ["/api/safety-plans"] },
+      { queryKey: ["/api/permits"] },
+    ],
+  }) as [{ data: SafetyPlan[] }, { data: Permit[] }];
 
-  const { data: permits = [] } = useQuery<Permit[]>({
-    queryKey: ["/api/permits"],
-  });
-
-  const knownValues = {
+  /* rule: rerender-derived-state-no-effect — derive during render, memoize */
+  const knownValues = useMemo(() => ({
     machines: Array.from(new Set(existingPlans.map(p => p.machineNumber).filter(Boolean))) as string[],
     locations: Array.from(new Set(existingPlans.map(p => p.location).filter(Boolean))) as string[],
     shifts: Array.from(new Set(["Day", "Night", "Swing", ...existingPlans.map(p => p.shift).filter(Boolean)])) as string[],
-  };
+  }), [existingPlans]);
 
   // Determine current user from localStorage (set on last submission) or last known lead
   const [currentUser, setCurrentUser] = useState(() => {
@@ -133,7 +137,7 @@ export default function SafetyPlanPage() {
       }
 
       if (formData.leadName) {
-        try { localStorage.setItem("planflow_current_user", formData.leadName); } catch {}
+        try { localStorage.setItem("planflow_current_user", formData.leadName); } catch { }
         setCurrentUser(formData.leadName);
       }
 
@@ -279,7 +283,7 @@ export default function SafetyPlanPage() {
 
   if (view === "list") {
     return (
-      <div className="p-4 sm:p-6">
+      <div>
         <SafetyPlanList onNew={startNewForm} onEdit={(id) => {
           const plan = existingPlans.find(p => p.id === id);
           if (plan) { setViewingPlan(plan); setView("view"); }
@@ -296,7 +300,7 @@ export default function SafetyPlanPage() {
     ) : false;
 
     return (
-      <div className="p-4 sm:p-6">
+      <div>
         <SafetyPlanView
           plan={viewingPlan as any}
           currentUser={currentUser}
@@ -310,8 +314,8 @@ export default function SafetyPlanPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border border-border rounded-lg overflow-hidden bg-card">
+    <div className="-mt-8">
+      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border-2 border-slate-800 rounded-lg overflow-hidden bg-card shadow-sm">
         <StepperBar
           currentStep={step}
           completedSteps={completedSteps}
@@ -323,13 +327,15 @@ export default function SafetyPlanPage() {
         />
 
         <div className="flex-1 flex flex-col">
-          <div className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
-            <h2 className="text-base font-semibold">{STEP_TITLES[step]}</h2>
-            <Button type="button" variant="outline" size="sm" onClick={requestExit}>Exit Record</Button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="max-w-3xl mx-auto">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-5">
+            <div className="max-w-2xl mx-auto">
+              {/* Content header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">{STEP_TITLES[step]}</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Step {step} of 4</p>
+                </div>
+              </div>
               {step === 1 && (
                 <InitialDetailsStep
                   onSubmit={handleInitialDetailsSubmit}

@@ -142,13 +142,7 @@ export function InitialDetailsStep({ onSubmit, defaultValues, editValues, knownV
   };
 
   return (
-    <form onSubmit={handleSubmit(doSubmit)} className="space-y-5">
-      {/* New ISP header */}
-      <div>
-        <h1 className="text-lg font-semibold text-foreground">New ISP</h1>
-        <p className="text-sm text-muted-foreground">Fill in the task details to get started</p>
-      </div>
-
+    <form onSubmit={handleSubmit(doSubmit)} className="space-y-4">
       {/* Single cohesive form block */}
       <div className="space-y-4">
         <div>

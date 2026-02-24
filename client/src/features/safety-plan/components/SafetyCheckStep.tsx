@@ -27,20 +27,16 @@ export function SafetyCheckStep({ values, onChange }: Props) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-md bg-primary/10">
-            <Shield className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="font-semibold">Pretask Safety Check</h2>
-            <p className="text-sm text-muted-foreground">
-              {yesCount > 0 ? `${yesCount} concern${yesCount !== 1 ? "s" : ""} flagged` : "Tap each item to flag concerns"}
-            </p>
-          </div>
-        </div>
+    <div className="space-y-3">
+      {/* Compact header */}
+      <div className="flex items-center gap-2">
+        <Shield className="w-4 h-4 text-primary shrink-0" />
+        <h2 className="text-sm font-semibold text-foreground">Pretask Safety Check</h2>
+        {yesCount > 0 && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
+            {yesCount} flagged
+          </span>
+        )}
       </div>
 
       {/* Mobile: tappable cards */}
@@ -78,16 +74,24 @@ export function SafetyCheckStep({ values, onChange }: Props) {
         </div>
       )}
 
-      {/* Desktop: table rows with yes/no buttons */}
+      {/* Desktop: clickable rows with yes/no buttons */}
       {!isMobile && (
         <TooltipProvider delayDuration={200}>
           <div className="rounded-lg border border-border overflow-hidden">
             {QUESTIONS.map((q, idx) => {
               const val = values[q.key];
               return (
-                <div key={q.key} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors">
-                  <span className="text-[11px] font-semibold text-muted-foreground/50 w-5 shrink-0 text-right tabular-nums">
-                    {idx + 1}
+                <button
+                  key={q.key}
+                  type="button"
+                  onClick={() => onChange(q.key, val === "yes" ? "no" : "yes")}
+                  className="w-full text-left flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors"
+                >
+                  <span className={cn(
+                    "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors",
+                    val === "yes" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}>
+                    {val === "yes" ? <Check className="h-3 w-3" /> : idx + 1}
                   </span>
 
                   <div className="flex-1 min-w-0">
@@ -97,33 +101,25 @@ export function SafetyCheckStep({ values, onChange }: Props) {
                     <p className="text-[11px] text-muted-foreground/60 mt-0.5">{q.hint}</p>
                   </div>
 
-                  <div className="flex gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onChange(q.key, "yes")}
-                      className={cn(
-                        "h-7 w-12 rounded text-[11px] font-semibold transition-all",
-                        val === "yes"
-                          ? "bg-amber-500 text-white shadow-sm"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      )}
-                    >
+                  <div className="flex gap-1 shrink-0 pointer-events-none">
+                    <span className={cn(
+                      "h-7 w-12 rounded text-[11px] font-semibold transition-all flex items-center justify-center",
+                      val === "yes"
+                        ? "bg-primary text-white shadow-sm"
+                        : "bg-muted text-muted-foreground"
+                    )}>
                       Yes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onChange(q.key, "no")}
-                      className={cn(
-                        "h-7 w-12 rounded text-[11px] font-semibold transition-all",
-                        val === "no"
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      )}
-                    >
+                    </span>
+                    <span className={cn(
+                      "h-7 w-12 rounded text-[11px] font-semibold transition-all flex items-center justify-center",
+                      val === "no"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted text-muted-foreground"
+                    )}>
                       No
-                    </button>
+                    </span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>

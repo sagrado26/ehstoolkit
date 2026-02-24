@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -41,9 +41,10 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
   }, [isMobile]);
 
-  const toggleCollapsed = () => setIsCollapsed(!isCollapsed);
-  const toggleMobileOpen = () => setIsMobileOpen(!isMobileOpen);
-  const closeMobile = () => setIsMobileOpen(false);
+  /* rule: rerender-functional-setstate — stable callbacks, no stale closures */
+  const toggleCollapsed = useCallback(() => setIsCollapsed(prev => !prev), []);
+  const toggleMobileOpen = useCallback(() => setIsMobileOpen(prev => !prev), []);
+  const closeMobile = useCallback(() => setIsMobileOpen(false), []);
 
   return (
     <SidebarContext.Provider value={{
