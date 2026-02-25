@@ -13,27 +13,27 @@ import { useState, useEffect } from "react";
 const USER_ID = "default";
 
 const colorOptions = [
-  { 
-    id: "blue" as const, 
-    label: "Blue (ASML)", 
+  {
+    id: "blue" as const,
+    label: "Blue (ASML)",
     color: "bg-[#1a3a7a]",
     description: "Corporate blue"
   },
-  { 
-    id: "green" as const, 
-    label: "Green", 
+  {
+    id: "green" as const,
+    label: "Green",
     color: "bg-[#22C55E]",
     description: "Fresh and natural green"
   },
-  { 
-    id: "violet" as const, 
-    label: "Violet (Teams)", 
+  {
+    id: "violet" as const,
+    label: "Violet (Teams)",
     color: "bg-[#7C3AED]",
     description: "Microsoft Teams purple"
   },
-  { 
-    id: "darkgreen" as const, 
-    label: "Dark Green", 
+  {
+    id: "darkgreen" as const,
+    label: "Dark Green",
     color: "bg-[#166534]",
     description: "Professional dark green theme"
   },
@@ -57,7 +57,7 @@ const siteOptions = ["F34 Intel Ireland"];
 export default function Settings() {
   const { color, navColor, mode, setColor, setNavColor, toggleMode } = useTheme();
   const queryClient = useQueryClient();
-  
+
   const [ispSystem, setIspSystem] = useState("Others");
   const [ispGroup, setIspGroup] = useState("Europe");
   const [ispSite, setIspSite] = useState("F34 Intel Ireland");
@@ -161,11 +161,10 @@ export default function Settings() {
                   <button
                     key={option.id}
                     onClick={() => setColor(option.id)}
-                    className={`relative p-4 rounded-md border-2 transition-all text-left hover-elevate ${
-                      color === option.id 
-                        ? "border-primary bg-primary/5" 
-                        : "border-border bg-card"
-                    }`}
+                    className={`relative p-4 rounded-md border-2 transition-all text-left hover-elevate ${color === option.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card"
+                      }`}
                     data-testid={`button-theme-${option.id}`}
                   >
                     {color === option.id && (
@@ -221,11 +220,10 @@ export default function Settings() {
                   <button
                     key={option.id}
                     onClick={() => setNavColor(option.id)}
-                    className={`relative p-3 rounded-md border-2 transition-all text-left hover-elevate ${
-                      navColor === option.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card"
-                    }`}
+                    className={`relative p-3 rounded-md border-2 transition-all text-left hover-elevate ${navColor === option.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card"
+                      }`}
                     data-testid={`button-nav-${option.id}`}
                   >
                     {navColor === option.id && (
@@ -298,11 +296,10 @@ export default function Settings() {
                           key={option}
                           type="button"
                           onClick={() => handleSystemChange(option)}
-                          className={`py-2 rounded-md text-xs font-medium transition-all ${
-                            ispSystem === option
+                          className={`py-2 rounded-md text-xs font-medium transition-all ${ispSystem === option
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-muted-foreground hover:bg-muted/80"
-                          }`}
+                            }`}
                           data-testid={`settings-system-${option.toLowerCase()}`}
                         >
                           {option}

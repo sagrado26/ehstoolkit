@@ -6,6 +6,7 @@ import { registerCraneInspectionRoutes } from "./routes/crane-inspections";
 import { registerDraegerCalibrationRoutes } from "./routes/draeger-calibrations";
 import { registerIncidentRoutes } from "./routes/incidents";
 import { registerDocumentRoutes } from "./routes/documents";
+import { registerSRBRoutes } from "./routes/srb";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -23,5 +24,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerDraegerCalibrationRoutes(app);
   registerIncidentRoutes(app);
   registerDocumentRoutes(app);
+  registerSRBRoutes(app);
   return createServer(app);
 }

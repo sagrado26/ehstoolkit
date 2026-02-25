@@ -89,23 +89,25 @@ export default function AdminPage() {
   });
 
   const handleSetCurrentUser = (name: string) => {
-    try { localStorage.setItem("planflow_current_user", name); } catch {}
+    try { localStorage.setItem("planflow_current_user", name); } catch { }
     setActiveCurrentUser(name);
   };
 
   const handleClearCurrentUser = () => {
-    try { localStorage.removeItem("planflow_current_user"); } catch {}
+    try { localStorage.removeItem("planflow_current_user"); } catch { }
     setActiveCurrentUser("");
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Admin Panel</h1>
-        <p className="text-sm text-muted-foreground">Manage user directory and system configuration</p>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+          <p className="text-muted-foreground">Manage user directory and system configuration</p>
+        </div>
       </div>
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue="users" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="users" className="gap-1.5">
             <Users className="h-3.5 w-3.5" /> Users

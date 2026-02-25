@@ -3,10 +3,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { PermitList } from "@/features/permit-to-work/components/PermitList";
 import { PermitForm } from "@/features/permit-to-work/components/PermitForm";
+import { PermitTypeSelection, type PermitTypeId } from "@/features/permit-to-work/components/PermitTypeSelection";
+import { PermitDetail } from "@/features/permit-to-work/components/PermitDetail";
 import { useToast } from "@/hooks/use-toast";
 
+type View = "list" | "type-select" | "form" | "detail";
+
 export default function PermitToWorkPage() {
-  const [showForm, setShowForm] = useState(false);
+  const [view, setView] = useState<View>("list");
+  const [selectedPermitType, setSelectedPermitType] = useState<PermitTypeId | undefined>();
+  const [selectedPermitId, setSelectedPermitId] = useState<number | null>(null);
   const qc = useQueryClient();
   const { toast } = useToast();
 
@@ -14,26 +20,64 @@ export default function PermitToWorkPage() {
     mutationFn: (data: any) => apiRequest("POST", "/api/permits", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/permits"] });
-      setShowForm(false);
-      toast({ title: "Permit created." });
+      setView("list");
+      toast({ title: "Permit created successfully." });
     },
   });
 
-  if (showForm) {
+  const handleNewPermit = () => {
+    setSelectedPermitType(undefined);
+    setView("type-select");
+  };
+
+  const handleTypeSelected = (type: PermitTypeId) => {
+    setSelectedPermitType(type);
+    setView("form");
+  };
+
+  const handleViewPermit = (id: number) => {
+    setSelectedPermitId(id);
+    setView("detail");
+  };
+
+  const handleBackToList = () => {
+    setView("list");
+    setSelectedPermitId(null);
+    setSelectedPermitType(undefined);
+  };
+
+  if (view === "type-select") {
     return (
-      <div className="p-4 sm:p-6 h-full max-w-5xl">
+      <div className="py-4">
+        <PermitTypeSelection onSelect={handleTypeSelected} onCancel={handleBackToList} />
+      </div>
+    );
+  }
+
+  if (view === "form") {
+    return (
+      <div className="h-full max-w-5xl">
         <PermitForm
+          permitType={selectedPermitType}
           onSubmit={data => createMutation.mutate(data)}
-          onCancel={() => setShowForm(false)}
+          onCancel={handleBackToList}
           isLoading={createMutation.isPending}
         />
       </div>
     );
   }
 
+  if (view === "detail" && selectedPermitId !== null) {
+    return (
+      <div className="py-2">
+        <PermitDetail permitId={selectedPermitId} onBack={handleBackToList} />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 sm:p-6">
-      <PermitList onNew={() => setShowForm(true)} />
+    <div>
+      <PermitList onNew={handleNewPermit} onView={handleViewPermit} />
     </div>
   );
 }

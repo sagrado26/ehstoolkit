@@ -20,10 +20,10 @@ export default function DocumentationPage() {
   });
 
   return (
-    <div className="p-4 sm:p-6">
+    <div>
       {showForm ? (
         <div>
-          <h2 className="text-xl font-bold mb-4">Add Document</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Add Document</h2>
           <DocumentForm
             onSubmit={data => createMutation.mutate(data)}
             onCancel={() => setShowForm(false)}

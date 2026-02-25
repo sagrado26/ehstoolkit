@@ -107,3 +107,4 @@ temp/
 
 # Docker volumes (if not using named volumes)
 docker-volumes/
+node_modules

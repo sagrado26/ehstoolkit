@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
@@ -63,11 +63,12 @@ export function CraneInspectionList({ onNew }: Props) {
   }, [inspections, search]);
 
   const sorted = useMemo(() => sortRows(filtered, sort.field, sort.dir), [filtered, sort]);
-  const handleSort = (field: string) => setSort(prev => nextSort(prev.field, prev.dir, field));
+  /* rule: rerender-functional-setstate — stable callback refs */
+  const handleSort = useCallback((field: string) => setSort(prev => nextSort(prev.field, prev.dir, field)), []);
+  const handleSearch = useCallback((val: string) => { setSearch(val); setPage(1); }, []);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paged = showAll ? sorted : sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const handleSearch = (val: string) => { setSearch(val); setPage(1); };
 
   const show = (key: string) => colVisible[key] !== false;
 
@@ -75,7 +76,7 @@ export function CraneInspectionList({ onNew }: Props) {
     <Card className="overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold">Crane Inspections</h1>
+          <h1 className="text-xl font-bold text-gray-900">Crane Inspections</h1>
           <p className="text-sm text-muted-foreground">
             Pre-use inspection records &middot; {(inspections as any[]).length} record{(inspections as any[]).length !== 1 ? "s" : ""}
           </p>
@@ -107,7 +108,7 @@ export function CraneInspectionList({ onNew }: Props) {
           {isAdmin && (
             <ColumnToggle columns={COLUMNS} visible={colVisible} onChange={setColVisible} />
           )}
-          <Button onClick={onNew} className="gap-2">
+          <Button onClick={onNew} className="gap-2 bg-brand-dark hover:bg-brand-dark/90">
             <Plus className="h-4 w-4" /> New Inspection
           </Button>
         </div>
@@ -204,7 +205,7 @@ export function CraneInspectionList({ onNew }: Props) {
                   {paged.map((ins: any) => {
                     const status = statusConfig[ins.status] || statusConfig.draft;
                     return (
-                      <tr key={ins.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors">
+                      <tr key={ins.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-all table-row-virtualized group/row">
                         {show("inspector") && (
                           <td className="py-3.5 px-5">
                             <NameAvatar name={ins.inspector} />

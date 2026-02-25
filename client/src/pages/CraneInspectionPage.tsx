@@ -20,7 +20,7 @@ export default function CraneInspectionPage() {
   });
 
   return (
-    <div className="p-4 sm:p-6">
+    <div>
       {showForm ? (
         <div>
           <h2 className="text-xl font-bold mb-4">New Crane Inspection</h2>
