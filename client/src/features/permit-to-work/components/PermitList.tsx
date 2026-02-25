@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Trash2, Search, Plus, FileText, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Props { onNew: () => void; }
+interface Props { onNew: () => void; onView: (id: number) => void; }
 
 const STATUS_STYLES: Record<string, string> = {
   approved: "bg-primary/10 text-primary border-primary/20",
@@ -41,7 +41,7 @@ const COLUMNS: ColumnDef[] = [
 
 const PAGE_SIZE = 10;
 
-export function PermitList({ onNew }: Props) {
+export function PermitList({ onNew, onView }: Props) {
   const qc = useQueryClient();
   const isAdmin = useIsAdmin();
   const isMobile = useIsMobile();
@@ -202,7 +202,8 @@ export function PermitList({ onNew }: Props) {
                             {p.status === "approved" ? "Issued" : p.status?.charAt(0).toUpperCase() + p.status?.slice(1)}
                           </Badge>
                         </div>
-                        <div className="flex justify-end pt-2 border-t border-border">
+                        <div className="flex justify-between items-center pt-2 border-t border-border">
+                          <Button variant="outline" size="sm" className="text-xs" onClick={() => onView(p.id)}>View Details</Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -236,7 +237,7 @@ export function PermitList({ onNew }: Props) {
                 </thead>
                 <tbody>
                   {paged.map((p: any) => (
-                    <tr key={p.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-all table-row-virtualized group/row">
+                    <tr key={p.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-all table-row-virtualized group/row cursor-pointer" onClick={() => onView(p.id)}>
                       {show("date") && <td className="py-3.5 px-5 text-sm text-muted-foreground">{p.date}</td>}
                       {show("workType") && (
                         <td className="py-3.5 px-5">

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import DashboardHeader from "../DashboardHeader";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { isMobileOpen, closeMobile } = useSidebar();
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useState("Last 30 Days");
 
   return (
@@ -12,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar mobileOpen={isMobileOpen} onMobileClose={closeMobile} />
       <main className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader
-          userName="Carl Murphy"
+          userName={user?.displayName ?? "User"}
           dateRange={dateRange}
           setDateRange={setDateRange}
         />

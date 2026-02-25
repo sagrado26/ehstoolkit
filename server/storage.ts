@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type SafetyPlan, type InsertSafetyPlan, type UserPreferences, type InsertUserPreferences, type ReportList, type InsertReportList, type AuditLog, type InsertAuditLog, users, safetyPlans, userPreferences, reportList, auditLogs, permits, type Permit, type InsertPermit, craneInspections, type CraneInspection, type InsertCraneInspection, draegerCalibrations, type DraegerCalibration, type InsertDraegerCalibration, incidents, type Incident, type InsertIncident, documents, type Document, type InsertDocument } from "@shared/schema";
+import { type User, type InsertUser, type SafetyPlan, type InsertSafetyPlan, type UserPreferences, type InsertUserPreferences, type ReportList, type InsertReportList, type AuditLog, type InsertAuditLog, users, safetyPlans, userPreferences, reportList, auditLogs, permits, type Permit, type InsertPermit, permitGasMeasurements, type PermitGasMeasurement, type InsertGasMeasurement, permitApprovals, type PermitApproval, type InsertPermitApproval, permitSignOffs, type PermitSignOff, type InsertPermitSignOff, craneInspections, type CraneInspection, type InsertCraneInspection, draegerCalibrations, type DraegerCalibration, type InsertDraegerCalibration, incidents, type Incident, type InsertIncident, documents, type Document, type InsertDocument } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db as _db } from "./db";
 // DatabaseStorage is only instantiated when USE_DATABASE=true, so db is guaranteed non-null
@@ -34,6 +34,19 @@ export interface IStorage {
   createPermit(permit: InsertPermit): Promise<Permit>;
   updatePermit(id: number, permit: Partial<InsertPermit>): Promise<Permit | undefined>;
   deletePermit(id: number): Promise<boolean>;
+
+  // Gas Measurements
+  getGasMeasurements(permitId: number): Promise<PermitGasMeasurement[]>;
+  createGasMeasurement(measurement: InsertGasMeasurement): Promise<PermitGasMeasurement>;
+
+  // Permit Approvals
+  getPermitApprovals(permitId: number): Promise<PermitApproval[]>;
+  createPermitApproval(approval: InsertPermitApproval): Promise<PermitApproval>;
+  updatePermitApproval(id: number, approval: Partial<InsertPermitApproval>): Promise<PermitApproval | undefined>;
+
+  // Permit Sign-Offs
+  getPermitSignOffs(permitId: number): Promise<PermitSignOff[]>;
+  createPermitSignOff(signOff: InsertPermitSignOff): Promise<PermitSignOff>;
 
   // Crane Inspections
   getAllCraneInspections(): Promise<CraneInspection[]>;
@@ -71,6 +84,9 @@ export class MemStorage implements IStorage {
   private reports: Map<number, ReportList>;
   private auditLogsMap: Map<number, AuditLog>;
   private permitsMap: Map<number, Permit>;
+  private gasMeasurementsMap: Map<number, PermitGasMeasurement>;
+  private permitApprovalsMap: Map<number, PermitApproval>;
+  private permitSignOffsMap: Map<number, PermitSignOff>;
   private craneInspectionsMap: Map<number, CraneInspection>;
   private draegerCalibrationsMap: Map<number, DraegerCalibration>;
   private incidentsMap: Map<number, Incident>;
@@ -80,6 +96,9 @@ export class MemStorage implements IStorage {
   private nextReportId: number;
   private nextAuditLogId: number;
   private nextPermitId: number;
+  private nextGasMeasurementId: number;
+  private nextPermitApprovalId: number;
+  private nextPermitSignOffId: number;
   private nextCraneInspectionId: number;
   private nextDraegerCalibrationId: number;
   private nextIncidentId: number;
@@ -92,6 +111,9 @@ export class MemStorage implements IStorage {
     this.reports = new Map();
     this.auditLogsMap = new Map();
     this.permitsMap = new Map();
+    this.gasMeasurementsMap = new Map();
+    this.permitApprovalsMap = new Map();
+    this.permitSignOffsMap = new Map();
     this.craneInspectionsMap = new Map();
     this.draegerCalibrationsMap = new Map();
     this.incidentsMap = new Map();
@@ -101,6 +123,9 @@ export class MemStorage implements IStorage {
     this.nextReportId = 1;
     this.nextAuditLogId = 1;
     this.nextPermitId = 1;
+    this.nextGasMeasurementId = 1;
+    this.nextPermitApprovalId = 1;
+    this.nextPermitSignOffId = 1;
     this.nextCraneInspectionId = 1;
     this.nextDraegerCalibrationId = 1;
     this.nextIncidentId = 1;
@@ -227,31 +252,58 @@ export class MemStorage implements IStorage {
     const samples: Omit<Permit, 'id' | 'createdAt'>[] = [
       {
         date: "2025-03-04", submitter: "Declan Foley", manager: "Sarah O'Brien",
-        location: "Building 3 - Fab Bay 7", workType: "Hot Work",
+        location: "Building 3 - Fab Bay 7", workType: "Hot Work", permitType: "general",
         workDescription: "Welding repair on extraction unit bracket",
         spq1: "yes", spq2: "yes", spq3: "yes", spq4: "yes", spq5: "no",
         authorityName: "Sarah O'Brien", status: "approved",
+        o2Level: null, nitrogenPurge: null, entrySupervisor: null, standbyPerson: null,
+        hazardAssessment: null, respiratoryProtection: null, isolationMethods: null,
+        chemicalInventory: null, sdsDocuments: null, ppeRequirements: null, containmentPlan: null,
+        srbRequired: "no", srbPrimaryRoute: null, srbSecondaryRoute: null, srbAssemblyPoint: null, srbEmergencyContact: null,
       },
       {
         date: "2025-03-05", submitter: "Mike Chen", manager: "John Murphy",
-        location: "Building 2 - Subfab Level B", workType: "Electrical",
+        location: "Building 2 - Subfab Level B", workType: "Electrical", permitType: "general",
         workDescription: "Panel replacement and cable routing for HVAC unit",
         spq1: "yes", spq2: "yes", spq3: "no", spq4: "yes", spq5: "yes",
         authorityName: "", status: "pending",
+        o2Level: null, nitrogenPurge: null, entrySupervisor: null, standbyPerson: null,
+        hazardAssessment: null, respiratoryProtection: null, isolationMethods: null,
+        chemicalInventory: null, sdsDocuments: null, ppeRequirements: null, containmentPlan: null,
+        srbRequired: "no", srbPrimaryRoute: null, srbSecondaryRoute: null, srbAssemblyPoint: null, srbEmergencyContact: null,
       },
       {
         date: "2025-03-06", submitter: "Lisa Park", manager: "Michael Kelly",
-        location: "Building 1 - Roof Access", workType: "Working at Height",
+        location: "Building 1 - Roof Access", workType: "Working at Height", permitType: "hazardous-space",
         workDescription: "Antenna installation on rooftop comms tower",
         spq1: "yes", spq2: "yes", spq3: "yes", spq4: "yes", spq5: "yes",
         authorityName: "Michael Kelly", status: "approved",
+        o2Level: null, nitrogenPurge: null, entrySupervisor: null, standbyPerson: null,
+        hazardAssessment: "Fall hazard assessment completed", respiratoryProtection: "N/A - open air", isolationMethods: "Barricade perimeter",
+        chemicalInventory: null, sdsDocuments: null, ppeRequirements: null, containmentPlan: null,
+        srbRequired: "yes", srbPrimaryRoute: "Stairwell A to ground floor exit", srbSecondaryRoute: "Ladder to Building 1 mezzanine", srbAssemblyPoint: "Muster Point C - Car Park", srbEmergencyContact: "Site Emergency: 555-0199",
       },
       {
         date: "2025-03-07", submitter: "Tom Walsh", manager: "Aoife Ryan",
-        location: "Building 4 - Confined Space Tank C",  workType: "Confined Space",
+        location: "Building 4 - Confined Space Tank C", workType: "Confined Space", permitType: "confined-space",
         workDescription: "Inspection and cleaning of chemical storage tank",
         spq1: "no", spq2: "no", spq3: "no", spq4: "no", spq5: "no",
         authorityName: "", status: "draft",
+        o2Level: "20.9", nitrogenPurge: "yes", entrySupervisor: "Aoife Ryan", standbyPerson: "Padraig Quinn",
+        hazardAssessment: null, respiratoryProtection: null, isolationMethods: null,
+        chemicalInventory: null, sdsDocuments: null, ppeRequirements: null, containmentPlan: null,
+        srbRequired: "yes", srbPrimaryRoute: "Tank hatch to Building 4 exit A", srbSecondaryRoute: "Emergency ventilation shaft", srbAssemblyPoint: "Muster Point B - South Gate", srbEmergencyContact: "Rescue Team: 555-0200",
+      },
+      {
+        date: "2025-03-08", submitter: "Emma Doyle", manager: "Sarah O'Brien",
+        location: "Building 2 - Chemical Lab", workType: "Mechanical", permitType: "hazardous-chemicals",
+        workDescription: "Replacement of corroded acid transfer piping in chemical lab",
+        spq1: "yes", spq2: "yes", spq3: "yes", spq4: "yes", spq5: "yes",
+        authorityName: "Sarah O'Brien", status: "approved",
+        o2Level: null, nitrogenPurge: null, entrySupervisor: null, standbyPerson: null,
+        hazardAssessment: null, respiratoryProtection: null, isolationMethods: null,
+        chemicalInventory: "Hydrochloric Acid (HCl), Sulfuric Acid (H2SO4)", sdsDocuments: "SDS-HCl-2024, SDS-H2SO4-2024", ppeRequirements: "Chemical-resistant gloves, face shield, acid apron", containmentPlan: "Drip trays under all joints, spill kit within 5m",
+        srbRequired: "yes", srbPrimaryRoute: "Lab exit to Building 2 main corridor", srbSecondaryRoute: "Emergency shower route to east exit", srbAssemblyPoint: "Muster Point A - Main Gate", srbEmergencyContact: "HAZMAT Team: 555-0201",
       },
     ];
     samples.forEach(s => {
@@ -507,11 +559,22 @@ export class MemStorage implements IStorage {
     const p: Permit = {
       id, date: permit.date, submitter: permit.submitter, manager: permit.manager,
       location: permit.location ?? "", workType: permit.workType ?? "",
+      permitType: permit.permitType ?? "general",
       workDescription: permit.workDescription ?? "",
       spq1: permit.spq1 ?? "no", spq2: permit.spq2 ?? "no", spq3: permit.spq3 ?? "no",
       spq4: permit.spq4 ?? "no", spq5: permit.spq5 ?? "no",
       authorityName: permit.authorityName ?? "",
-      status: permit.status ?? "draft", createdAt: new Date(),
+      status: permit.status ?? "draft",
+      o2Level: permit.o2Level ?? null, nitrogenPurge: permit.nitrogenPurge ?? null,
+      entrySupervisor: permit.entrySupervisor ?? null, standbyPerson: permit.standbyPerson ?? null,
+      hazardAssessment: permit.hazardAssessment ?? null, respiratoryProtection: permit.respiratoryProtection ?? null,
+      isolationMethods: permit.isolationMethods ?? null,
+      chemicalInventory: permit.chemicalInventory ?? null, sdsDocuments: permit.sdsDocuments ?? null,
+      ppeRequirements: permit.ppeRequirements ?? null, containmentPlan: permit.containmentPlan ?? null,
+      srbRequired: permit.srbRequired ?? "no", srbPrimaryRoute: permit.srbPrimaryRoute ?? null,
+      srbSecondaryRoute: permit.srbSecondaryRoute ?? null, srbAssemblyPoint: permit.srbAssemblyPoint ?? null,
+      srbEmergencyContact: permit.srbEmergencyContact ?? null,
+      createdAt: new Date(),
     };
     this.permitsMap.set(id, p);
     return p;
@@ -524,6 +587,66 @@ export class MemStorage implements IStorage {
     return updated;
   }
   async deletePermit(id: number): Promise<boolean> { return this.permitsMap.delete(id); }
+
+  // ── Gas Measurements ──────────────────────────────────────────────────────
+  async getGasMeasurements(permitId: number): Promise<PermitGasMeasurement[]> {
+    return Array.from(this.gasMeasurementsMap.values())
+      .filter(m => m.permitId === permitId)
+      .sort((a, b) => (b.measuredAt?.getTime() ?? 0) - (a.measuredAt?.getTime() ?? 0));
+  }
+  async createGasMeasurement(measurement: InsertGasMeasurement): Promise<PermitGasMeasurement> {
+    const id = this.nextGasMeasurementId++;
+    const m: PermitGasMeasurement = {
+      id, permitId: measurement.permitId, o2Level: measurement.o2Level,
+      co2Level: measurement.co2Level, coLevel: measurement.coLevel,
+      h2sLevel: measurement.h2sLevel ?? "0", lelLevel: measurement.lelLevel ?? "0",
+      measuredBy: measurement.measuredBy, alertTriggered: measurement.alertTriggered ?? "no",
+      notes: measurement.notes ?? null, measuredAt: new Date(),
+    };
+    this.gasMeasurementsMap.set(id, m);
+    return m;
+  }
+
+  // ── Permit Approvals ──────────────────────────────────────────────────────
+  async getPermitApprovals(permitId: number): Promise<PermitApproval[]> {
+    return Array.from(this.permitApprovalsMap.values())
+      .filter(a => a.permitId === permitId)
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+  }
+  async createPermitApproval(approval: InsertPermitApproval): Promise<PermitApproval> {
+    const id = this.nextPermitApprovalId++;
+    const a: PermitApproval = {
+      id, permitId: approval.permitId, approverRole: approval.approverRole,
+      approverName: approval.approverName, status: approval.status ?? "pending",
+      comments: approval.comments ?? null, approvedAt: null, createdAt: new Date(),
+    };
+    this.permitApprovalsMap.set(id, a);
+    return a;
+  }
+  async updatePermitApproval(id: number, approval: Partial<InsertPermitApproval>): Promise<PermitApproval | undefined> {
+    const existing = this.permitApprovalsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...approval, approvedAt: approval.status === "approved" || approval.status === "rejected" ? new Date() : existing.approvedAt };
+    this.permitApprovalsMap.set(id, updated);
+    return updated;
+  }
+
+  // ── Permit Sign-Offs ──────────────────────────────────────────────────────
+  async getPermitSignOffs(permitId: number): Promise<PermitSignOff[]> {
+    return Array.from(this.permitSignOffsMap.values())
+      .filter(s => s.permitId === permitId)
+      .sort((a, b) => (b.signedAt?.getTime() ?? 0) - (a.signedAt?.getTime() ?? 0));
+  }
+  async createPermitSignOff(signOff: InsertPermitSignOff): Promise<PermitSignOff> {
+    const id = this.nextPermitSignOffId++;
+    const s: PermitSignOff = {
+      id, permitId: signOff.permitId, role: signOff.role,
+      signedBy: signOff.signedBy, signatureData: signOff.signatureData ?? null,
+      signedAt: new Date(),
+    };
+    this.permitSignOffsMap.set(id, s);
+    return s;
+  }
 
   // ── Crane Inspections ──────────────────────────────────────────────────────
   async getAllCraneInspections(): Promise<CraneInspection[]> {
@@ -765,6 +888,41 @@ export class DatabaseStorage implements IStorage {
   async deletePermit(id: number) {
     const result = await db.delete(permits).where(eq(permits.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // ── Gas Measurements ──────────────────────────────────────────────────────
+  async getGasMeasurements(permitId: number) {
+    return db.select().from(permitGasMeasurements).where(eq(permitGasMeasurements.permitId, permitId)).orderBy(desc(permitGasMeasurements.measuredAt));
+  }
+  async createGasMeasurement(measurement: InsertGasMeasurement) {
+    const [m] = await db.insert(permitGasMeasurements).values(measurement).returning();
+    return m;
+  }
+
+  // ── Permit Approvals ──────────────────────────────────────────────────────
+  async getPermitApprovals(permitId: number) {
+    return db.select().from(permitApprovals).where(eq(permitApprovals.permitId, permitId)).orderBy(desc(permitApprovals.createdAt));
+  }
+  async createPermitApproval(approval: InsertPermitApproval) {
+    const [a] = await db.insert(permitApprovals).values(approval).returning();
+    return a;
+  }
+  async updatePermitApproval(id: number, approval: Partial<InsertPermitApproval>) {
+    const updateData: Record<string, unknown> = { ...approval };
+    if (approval.status === "approved" || approval.status === "rejected") {
+      updateData.approvedAt = new Date();
+    }
+    const [a] = await db.update(permitApprovals).set(updateData).where(eq(permitApprovals.id, id)).returning();
+    return a;
+  }
+
+  // ── Permit Sign-Offs ──────────────────────────────────────────────────────
+  async getPermitSignOffs(permitId: number) {
+    return db.select().from(permitSignOffs).where(eq(permitSignOffs.permitId, permitId)).orderBy(desc(permitSignOffs.signedAt));
+  }
+  async createPermitSignOff(signOff: InsertPermitSignOff) {
+    const [s] = await db.insert(permitSignOffs).values(signOff).returning();
+    return s;
   }
 
   // ── Crane Inspections ──────────────────────────────────────────────────────
