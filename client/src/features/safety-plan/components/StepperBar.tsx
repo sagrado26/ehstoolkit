@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Check, Pencil, Shield, X } from "lucide-react";
+import { Check, Pencil, Shield } from "lucide-react";
 
 const STEPS = [
   { n: 1, label: "Task Details" },
@@ -23,8 +23,8 @@ interface StepperBarProps {
 export function StepperBar({ currentStep, completedSteps, onStepClick, prefilled, taskSummary, onEditDetails, onExit }: StepperBarProps) {
   return (
     <>
-      {/* ── Mobile: full-width horizontal stepper ── */}
-      <div className="md:hidden flex border-b-2 border-slate-800 bg-muted/40">
+      {/* ── Mobile: horizontal stepper ── */}
+      <div className="md:hidden flex border-b border-border bg-card">
         {STEPS.map((step) => {
           const done = completedSteps.includes(step.n);
           const active = currentStep === step.n;
@@ -42,49 +42,46 @@ export function StepperBar({ currentStep, completedSteps, onStepClick, prefilled
                 !clickable && "cursor-default"
               )}
             >
-              {/* Top progress bar */}
               <div className={cn(
-                "absolute top-0 inset-x-0 h-1 rounded-b-full transition-colors",
-                active ? "bg-primary" : done ? "bg-primary/50" : "bg-transparent"
+                "absolute top-0 inset-x-0 h-0.5 transition-colors",
+                active ? "bg-primary" : done ? "bg-primary/40" : "bg-transparent"
               )} />
 
-              {/* Step indicator */}
               <span className={cn(
-                "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-                active ? "bg-primary text-white shadow-md" : done ? "bg-primary/60 text-white" : "bg-muted-foreground/20 text-muted-foreground/30"
+                "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all",
+                active ? "bg-primary text-primary-foreground shadow-sm" : done ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground/40"
               )}>
                 {done && !active ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : step.n}
               </span>
 
-              {/* Label */}
               <span className="text-[10px] font-semibold">{step.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* ── Desktop: vertical sidebar ── */}
-      <div className="hidden md:flex w-56 shrink-0 flex-col bg-muted border-r-2 border-slate-800">
+      {/* ── Desktop: vertical sidebar — matches nav sidebar brand styling ── */}
+      <div className="hidden md:flex w-56 shrink-0 flex-col bg-slate-800 text-white">
         {/* Header */}
-        <div className="p-3 border-b border-border">
-          <div className="flex items-center gap-2 mb-1.5">
-            <div className="p-0.5 rounded bg-primary/10">
-              <Shield className="h-3 w-3 text-primary" />
+        <div className="px-4 py-4 border-b border-white/10">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="p-1 rounded-md bg-white/10">
+              <Shield className="h-3.5 w-3.5 text-white/70" />
             </div>
-            <span className="font-semibold text-xs text-foreground">New ISP</span>
+            <span className="font-semibold text-sm">New ISP</span>
           </div>
           {prefilled && (
-            <div className="flex flex-wrap gap-0.5">
-              <span className="px-1 py-0.5 rounded bg-primary/8 text-primary text-[9px] font-medium">{prefilled.system}</span>
-              <span className="px-1 py-0.5 rounded bg-primary/8 text-primary text-[9px] font-medium">{prefilled.group}</span>
-              <span className="px-1 py-0.5 rounded bg-muted text-muted-foreground text-[9px] font-medium">{prefilled.date}</span>
+            <div className="flex flex-wrap gap-1">
+              <span className="px-1.5 py-0.5 rounded bg-white/10 text-white/70 text-[10px] font-medium">{prefilled.system}</span>
+              <span className="px-1.5 py-0.5 rounded bg-white/10 text-white/70 text-[10px] font-medium">{prefilled.group}</span>
+              <span className="px-1.5 py-0.5 rounded bg-white/10 text-white/50 text-[10px] font-medium">{prefilled.date}</span>
             </div>
           )}
         </div>
 
         {/* Steps */}
-        <nav className="flex-1 p-3 space-y-1">
-          <p className="text-[8px] font-semibold uppercase tracking-widest text-muted-foreground/50 px-3 mb-3">Progress</p>
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30 px-3 mb-3">Progress</p>
           {STEPS.map((step) => {
             const done = completedSteps.includes(step.n);
             const active = currentStep === step.n;
@@ -97,19 +94,19 @@ export function StepperBar({ currentStep, completedSteps, onStepClick, prefilled
                 disabled={!clickable}
                 onClick={() => clickable && onStepClick(step.n)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all text-left font-medium",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left font-medium",
                   active
-                    ? "bg-primary text-primary-foreground shadow-md"
+                    ? "bg-white/15 text-white shadow-sm"
                     : clickable
-                      ? "text-foreground hover:bg-muted/70 hover:text-primary"
-                      : "text-muted-foreground/30 cursor-default"
+                      ? "text-white/70 hover:bg-white/8 hover:text-white"
+                      : "text-white/20 cursor-default"
                 )}
               >
                 <span className={cn(
-                  "h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-all",
-                  done && !active && "bg-primary/70 text-primary-foreground",
-                  active && "bg-white text-primary scale-110",
-                  !done && !active && "border-2 border-muted-foreground/20 text-muted-foreground/40"
+                  "h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-all",
+                  done && !active && "bg-emerald-500/80 text-white",
+                  active && "bg-white text-slate-800",
+                  !done && !active && "border-2 border-white/15 text-white/25"
                 )}>
                   {done && !active ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : step.n}
                 </span>
@@ -119,30 +116,30 @@ export function StepperBar({ currentStep, completedSteps, onStepClick, prefilled
           })}
         </nav>
 
-        {/* Task summary — shown after step 1 */}
+        {/* Task summary */}
         {taskSummary && completedSteps.includes(1) && currentStep > 1 && (
-          <div className="px-3 py-2 border-t border-border">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/40">Task Info</p>
+          <div className="px-4 py-3 border-t border-white/10">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-white/30">Task Info</p>
               {onEditDetails && (
-                <button type="button" onClick={onEditDetails} className="text-muted-foreground/30 hover:text-foreground transition-colors">
+                <button type="button" onClick={onEditDetails} className="text-white/30 hover:text-white transition-colors">
                   <Pencil className="h-3 w-3" />
                 </button>
               )}
             </div>
-            <div className="space-y-0.5 text-[10px]">
-              <p className="text-foreground font-medium truncate">{taskSummary.taskName}</p>
-              <p className="text-muted-foreground/70 truncate text-[9px]">{taskSummary.shift} &middot; {taskSummary.location}</p>
-              <p className="text-muted-foreground/70 truncate text-[9px]">Mach: {taskSummary.machineNumber}</p>
+            <div className="space-y-0.5">
+              <p className="text-white/90 text-xs font-medium truncate">{taskSummary.taskName}</p>
+              <p className="text-white/40 text-[10px] truncate">{taskSummary.shift} &middot; {taskSummary.location}</p>
+              <p className="text-white/40 text-[10px] truncate">Mach: {taskSummary.machineNumber}</p>
             </div>
           </div>
         )}
 
         {/* Exit */}
         {onExit && (
-          <div className="p-2 border-t border-border">
-            <button type="button" onClick={onExit} className="w-full text-[10px] text-muted-foreground/40 hover:text-destructive text-left px-2 py-1 transition-colors">
-              &times; Exit
+          <div className="px-3 py-3 border-t border-white/10">
+            <button type="button" onClick={onExit} className="w-full text-[11px] text-white/30 hover:text-red-400 text-left px-3 py-1 transition-colors">
+              ✕ Exit
             </button>
           </div>
         )}

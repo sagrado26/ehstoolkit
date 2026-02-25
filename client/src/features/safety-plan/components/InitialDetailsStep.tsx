@@ -66,7 +66,7 @@ function ComboField({
         <Label className="text-sm font-medium">
           {label} {required && <span className="text-destructive">*</span>}
         </Label>
-        <div className="flex gap-2 mt-1.5">
+        <div className="flex gap-2 mt-2">
           <Input
             value={value}
             onChange={e => onChange(e.target.value)}
@@ -95,7 +95,7 @@ function ComboField({
           onChange(v);
         }
       }}>
-        <SelectTrigger className="mt-1.5">
+        <SelectTrigger className="mt-2">
           <SelectValue placeholder={placeholder || `Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>
@@ -142,14 +142,14 @@ export function InitialDetailsStep({ onSubmit, defaultValues, editValues, knownV
   };
 
   return (
-    <form onSubmit={handleSubmit(doSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(doSubmit)} className="space-y-6">
       {/* Single cohesive form block */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
           <Label className="text-sm font-medium">
             Task Name <span className="text-destructive">*</span>
           </Label>
-          <div className="flex gap-2 mt-1.5">
+          <div className="flex gap-2 mt-2">
             <Select value={taskPrefix} onValueChange={setTaskPrefix}>
               <SelectTrigger className="w-[100px] shrink-0">
                 <SelectValue placeholder="Type" />
@@ -175,7 +175,7 @@ export function InitialDetailsStep({ onSubmit, defaultValues, editValues, knownV
           </div>
           {errors.taskName && <p className="text-xs text-destructive mt-1">{errors.taskName.message}</p>}
           {taskPrefix && taskNameVal && (
-            <p className="text-xs text-muted-foreground mt-1.5">
+            <p className="text-xs text-muted-foreground mt-2">
               Full name: <span className="font-medium text-foreground">{taskPrefix} - {taskNameVal}</span>
             </p>
           )}
@@ -214,7 +214,7 @@ export function InitialDetailsStep({ onSubmit, defaultValues, editValues, knownV
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-2">
         <Button type="submit" className="gap-2">
           Next Step
           <ArrowRight className="h-4 w-4" />
