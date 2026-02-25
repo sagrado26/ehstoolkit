@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type SafetyPlan, type InsertSafetyPlan, type UserPreferences, type InsertUserPreferences, type ReportList, type InsertReportList, type AuditLog, type InsertAuditLog, users, safetyPlans, userPreferences, reportList, auditLogs, permits, type Permit, type InsertPermit, permitGasMeasurements, type PermitGasMeasurement, type InsertGasMeasurement, permitApprovals, type PermitApproval, type InsertPermitApproval, permitSignOffs, type PermitSignOff, type InsertPermitSignOff, craneInspections, type CraneInspection, type InsertCraneInspection, draegerCalibrations, type DraegerCalibration, type InsertDraegerCalibration, incidents, type Incident, type InsertIncident, documents, type Document, type InsertDocument } from "@shared/schema";
+import { type User, type InsertUser, type SafetyPlan, type InsertSafetyPlan, type UserPreferences, type InsertUserPreferences, type ReportList, type InsertReportList, type AuditLog, type InsertAuditLog, users, safetyPlans, userPreferences, reportList, auditLogs, permits, type Permit, type InsertPermit, permitGasMeasurements, type PermitGasMeasurement, type InsertGasMeasurement, permitApprovals, type PermitApproval, type InsertPermitApproval, permitSignOffs, type PermitSignOff, type InsertPermitSignOff, craneInspections, type CraneInspection, type InsertCraneInspection, draegerCalibrations, type DraegerCalibration, type InsertDraegerCalibration, incidents, type Incident, type InsertIncident, documents, type Document, type InsertDocument, srbRecords, type SRBRecord, type InsertSRBRecord } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db as _db } from "./db";
 // DatabaseStorage is only instantiated when USE_DATABASE=true, so db is guaranteed non-null
@@ -75,6 +75,14 @@ export interface IStorage {
   createDocument(doc: InsertDocument): Promise<Document>;
   updateDocument(id: number, doc: Partial<InsertDocument>): Promise<Document | undefined>;
   deleteDocument(id: number): Promise<boolean>;
+
+  // Safety Review Board
+  getAllSRBRecords(): Promise<SRBRecord[]>;
+  getSRBRecord(id: number): Promise<SRBRecord | undefined>;
+  getSRBRecordBySafetyPlanId(safetyPlanId: number): Promise<SRBRecord | undefined>;
+  createSRBRecord(record: InsertSRBRecord): Promise<SRBRecord>;
+  updateSRBRecord(id: number, record: Partial<InsertSRBRecord>): Promise<SRBRecord | undefined>;
+  deleteSRBRecord(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -91,6 +99,7 @@ export class MemStorage implements IStorage {
   private draegerCalibrationsMap: Map<number, DraegerCalibration>;
   private incidentsMap: Map<number, Incident>;
   private documentsMap: Map<number, Document>;
+  private srbRecordsMap: Map<number, SRBRecord>;
   private nextPlanId: number;
   private nextPrefsId: number;
   private nextReportId: number;
@@ -103,6 +112,7 @@ export class MemStorage implements IStorage {
   private nextDraegerCalibrationId: number;
   private nextIncidentId: number;
   private nextDocumentId: number;
+  private nextSRBId: number;
 
   constructor() {
     this.users = new Map();
@@ -118,6 +128,7 @@ export class MemStorage implements IStorage {
     this.draegerCalibrationsMap = new Map();
     this.incidentsMap = new Map();
     this.documentsMap = new Map();
+    this.srbRecordsMap = new Map();
     this.nextPlanId = 1;
     this.nextPrefsId = 1;
     this.nextReportId = 1;
@@ -130,6 +141,7 @@ export class MemStorage implements IStorage {
     this.nextDraegerCalibrationId = 1;
     this.nextIncidentId = 1;
     this.nextDocumentId = 1;
+    this.nextSRBId = 1;
     this.seedSafetyPlans();
     this.seedPermits();
     this.seedCraneInspections();
@@ -727,6 +739,30 @@ export class MemStorage implements IStorage {
     return updated;
   }
   async deleteDocument(id: number): Promise<boolean> { return this.documentsMap.delete(id); }
+
+  // ── SRB Records ─────────────────────────────────────────────────────────────
+  async getAllSRBRecords(): Promise<SRBRecord[]> {
+    return Array.from(this.srbRecordsMap.values()).sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+  }
+  async getSRBRecord(id: number): Promise<SRBRecord | undefined> { return this.srbRecordsMap.get(id); }
+  async getSRBRecordBySafetyPlanId(safetyPlanId: number): Promise<SRBRecord | undefined> {
+    return Array.from(this.srbRecordsMap.values()).find(r => r.safetyPlanId === safetyPlanId);
+  }
+  async createSRBRecord(record: InsertSRBRecord): Promise<SRBRecord> {
+    const id = this.nextSRBId++;
+    const now = new Date();
+    const full = { ...record, id, createdAt: now, updatedAt: now, completedAt: null, escalatedHazards: record.escalatedHazards ?? [], originalAssessments: record.originalAssessments ?? {}, reassessments: record.reassessments ?? [], teamMembers: record.teamMembers ?? [], acknowledgements: record.acknowledgements ?? null, signatories: record.signatories ?? [] } as SRBRecord;
+    this.srbRecordsMap.set(id, full);
+    return full;
+  }
+  async updateSRBRecord(id: number, record: Partial<InsertSRBRecord>): Promise<SRBRecord | undefined> {
+    const existing = this.srbRecordsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...record, updatedAt: new Date() } as SRBRecord;
+    this.srbRecordsMap.set(id, updated);
+    return updated;
+  }
+  async deleteSRBRecord(id: number): Promise<boolean> { return this.srbRecordsMap.delete(id); }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1006,6 +1042,31 @@ export class DatabaseStorage implements IStorage {
   }
   async deleteDocument(id: number) {
     const result = await db.delete(documents).where(eq(documents.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // ── SRB Records ─────────────────────────────────────────────────────────────
+  async getAllSRBRecords() {
+    return db.select().from(srbRecords).orderBy(desc(srbRecords.createdAt));
+  }
+  async getSRBRecord(id: number) {
+    const [r] = await db.select().from(srbRecords).where(eq(srbRecords.id, id));
+    return r;
+  }
+  async getSRBRecordBySafetyPlanId(safetyPlanId: number) {
+    const [r] = await db.select().from(srbRecords).where(eq(srbRecords.safetyPlanId, safetyPlanId));
+    return r;
+  }
+  async createSRBRecord(record: InsertSRBRecord) {
+    const [r] = await db.insert(srbRecords).values(record as any).returning();
+    return r;
+  }
+  async updateSRBRecord(id: number, record: Partial<InsertSRBRecord>) {
+    const [r] = await db.update(srbRecords).set({ ...record, updatedAt: new Date() } as any).where(eq(srbRecords.id, id)).returning();
+    return r;
+  }
+  async deleteSRBRecord(id: number) {
+    const result = await db.delete(srbRecords).where(eq(srbRecords.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 }

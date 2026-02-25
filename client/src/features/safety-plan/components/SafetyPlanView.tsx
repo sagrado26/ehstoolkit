@@ -107,11 +107,12 @@ interface Props {
   onBack: () => void;
   onEdit?: () => void;
   onReuse?: () => void;
+  onStartSRB?: () => void;
   onViewReusedPlan?: (planId: number) => void;
   currentUser?: string;
 }
 
-export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onViewReusedPlan, currentUser }: Props) {
+export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onStartSRB, onViewReusedPlan, currentUser }: Props) {
   const [versionOpen, setVersionOpen] = useState(false);
   const [flagDialog, setFlagDialog] = useState<{ key: string; label: string } | null>(null);
 
@@ -225,6 +226,11 @@ export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onViewReusedPlan
         </div>
 
         <div className="flex items-center gap-3">
+          {onStartSRB && (
+            <Button onClick={onStartSRB} className="bg-red-600 hover:bg-red-700 text-white font-bold gap-2">
+              <ShieldAlert className="w-4 h-4" /> Start SRB
+            </Button>
+          )}
           {isTeamMember && onEdit ? (
             <Button onClick={onEdit} className="bg-brand-dark hover:bg-brand-light text-white font-bold gap-2">
               <Pencil className="w-4 h-4" /> Edit Plan

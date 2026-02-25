@@ -20,6 +20,7 @@ const IncidentsPage = lazy(() => import("@/pages/IncidentsPage"));
 const DocumentationPage = lazy(() => import("@/pages/DocumentationPage"));
 const Settings = lazy(() => import("@/pages/settings"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const SRBPage = lazy(() => import("@/pages/SRBPage"));
 
 function AuthenticatedRoutes() {
   return (
@@ -29,6 +30,7 @@ function AuthenticatedRoutes() {
           <Route path="/" component={DashboardPage} />
           <Route path="/safety-plan" component={SafetyPlanPage} />
           <Route path="/permit-to-work" component={PermitToWorkPage} />
+          <Route path="/safety-review-board" component={SRBPage} />
           <Route path="/crane-inspection" component={CraneInspectionPage} />
           <Route path="/draeger-calibration" component={DraegerCalibrationPage} />
           <Route path="/incidents" component={IncidentsPage} />
