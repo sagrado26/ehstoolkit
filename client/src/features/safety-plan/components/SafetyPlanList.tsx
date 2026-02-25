@@ -93,10 +93,10 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
   const show = (key: string) => colVisible[key] !== false;
 
   return (
-    <Card className="overflow-hidden border-gray-100 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border bg-slate-50/50">
+    <Card className="overflow-hidden border-border/60 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border/60 bg-muted/30">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Integrated Safety Plans</h1>
+          <h1 className="text-lg font-bold text-foreground">Integrated Safety Plans</h1>
           <p className="text-sm text-muted-foreground">
             Manage and review active risk assessments &middot; {(plans as any[]).length} total
           </p>
@@ -141,7 +141,7 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
           {isAdmin && (
             <ColumnToggle columns={COLUMNS} visible={colVisible} onChange={setColVisible} />
           )}
-          <Button onClick={onNew} className="gap-2 bg-brand-dark hover:bg-brand-dark/90">
+          <Button onClick={onNew} className="gap-2">
             <Plus className="h-4 w-4" /> New Plan
           </Button>
         </div>

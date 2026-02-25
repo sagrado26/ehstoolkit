@@ -1,23 +1,24 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard, ClipboardList, FileText, AlertTriangle,
-  HardHat, TestTube2, FolderOpen, Settings, UserCog, ShieldAlert,
+  LayoutDashboard, ClipboardList, FileText, AlertTriangle, ShieldAlert,
+  HardHat, TestTube2, FolderOpen, Settings, UserCog, Shield,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTheme, isLightNav } from "@/hooks/use-theme";
 
 const NAV = [
   {
-    group: "OVERVIEW",
-    items: [{ label: "Dashboard", href: "/", icon: LayoutDashboard }],
+    group: "GENERAL",
+    items: [{ label: "Overview", href: "/", icon: LayoutDashboard }],
   },
   {
     group: "SAFETY",
     items: [
-      { label: "Safety Plan", href: "/safety-plan", icon: ClipboardList },
-      { label: "Safety Review Board", href: "/safety-review-board", icon: ShieldAlert },
+      { label: "Integrated Safety Plan", href: "/safety-plan", icon: ClipboardList },
       { label: "Permit to Work", href: "/permit-to-work", icon: FileText },
       { label: "Incidents", href: "/incidents", icon: AlertTriangle },
+      { label: "Safety Review Board", href: "/safety-review-board", icon: ShieldAlert },
     ],
   },
   {
@@ -40,6 +41,13 @@ interface SidebarProps {
 
 export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const [location] = useLocation();
+  const { navColor } = useTheme();
+  const lightNav = isLightNav(navColor);
+
+  // Deep blue gradient for sidebar
+  const navBg: React.CSSProperties = {
+    background: "linear-gradient(180deg, #0A1A6B 0%, #0F238C 50%, #0A1A6B 100%)",
+  };
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -52,10 +60,13 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Header */}
       <div className="h-16 flex items-center px-5 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-brand-signal flex items-center justify-center text-sm font-bold text-white">
-            S
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-white/80" />
           </div>
-          <span className="font-bold text-base text-white">EHS Safety</span>
+          <div>
+            <span className="font-bold text-sm text-white leading-none block">EHS Safety</span>
+            <span className="text-[9px] text-white/40 font-medium uppercase tracking-wider">Ireland</span>
+          </div>
         </div>
       </div>
 
@@ -63,7 +74,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <nav className="mt-4 px-3 space-y-4 flex-1">
         {NAV.map((section) => (
           <div key={section.group}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest px-4 mb-1.5 text-white/30">
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/30 px-4 mb-1.5">
               {section.group}
             </p>
             <div className="space-y-0.5">
@@ -74,21 +85,16 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                   <Link key={item.href} href={item.href}>
                     <a
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors relative",
+                        "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors relative",
                         active
-                          ? "text-white bg-white/10"
-                          : "text-white/60 hover:bg-white/8 hover:text-white/80"
+                          ? "bg-white/10 text-white"
+                          : "text-gray-300 hover:bg-white/10"
                       )}
                     >
                       {active && (
-                        <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-brand-signal rounded-r-md" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-md" />
                       )}
-                      <div className={cn(
-                        "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-                        active ? "bg-brand-signal/20 text-brand-signal" : "bg-white/8 text-white/50"
-                      )}>
-                        <Icon className="w-4 h-4" />
-                      </div>
+                      <Icon className="w-4 h-4" />
                       {item.label}
                     </a>
                   </Link>
@@ -102,18 +108,14 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Bottom Sidebar */}
       <div className="p-3 border-t border-white/10">
         <Link href="/admin">
-          <a className="flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors text-white/60 hover:bg-white/8 hover:text-white/80">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-white/8 text-white/50 shrink-0">
-              <UserCog className="w-4 h-4" />
-            </div>
+          <a className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors text-gray-300 hover:bg-white/10">
+            <UserCog className="w-4 h-4" />
             Admin
           </a>
         </Link>
         <Link href="/settings">
-          <a className="flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors text-white/60 hover:bg-white/8 hover:text-white/80">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-white/8 text-white/50 shrink-0">
-              <Settings className="w-4 h-4" />
-            </div>
+          <a className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors text-gray-300 hover:bg-white/10">
+            <Settings className="w-4 h-4" />
             Settings
           </a>
         </Link>
@@ -127,13 +129,13 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={onMobileClose} />
-          <aside className="relative w-64 max-w-[80vw] flex flex-col justify-between h-full shadow-xl bg-gradient-to-b from-brand-dark via-brand to-brand-dark">
+          <aside className="relative w-64 max-w-[80vw] flex flex-col justify-between h-full shadow-xl" style={navBg}>
             {navContent}
           </aside>
         </div>
       )}
 
-      <aside className="hidden md:flex flex-col justify-between h-screen w-64 shadow-xl shrink-0 z-20 bg-gradient-to-b from-brand-dark via-brand to-brand-dark">
+      <aside className="hidden md:flex flex-col justify-between h-screen w-64 shadow-xl shrink-0 z-20" style={navBg}>
         {navContent}
       </aside>
     </>

@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ClipboardList, FileText, HardHat, AlertTriangle,
   ArrowUpRight, TrendingUp, ShieldCheck, TestTube2,
+  Search, Plus, Users, Clock, BarChart3,
 } from "lucide-react";
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -23,7 +26,6 @@ const cultureTrendData = [
   { month: "Feb", score: 49, reports: 10 },
 ];
 
-/* Theme-aware primary via CSS var; semantic colors stay fixed */
 const PRIMARY = "hsl(var(--primary))";
 const PRIMARY_FG = "hsl(var(--primary-foreground))";
 const CHART_COLORS = {
@@ -156,95 +158,127 @@ export default function DashboardPage() {
     fontSize: "12px",
   };
 
+  const metrics = [
+    { href: "/safety-plan", label: "Active Plans", value: activePlans, icon: ClipboardList, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
+    { href: "/permit-to-work", label: "Open Permits", value: openPermits, icon: FileText, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
+    { href: "/incidents", label: "Incidents", value: openIncidents, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/30" },
+    { href: "/crane-inspection", label: "Crane Checks", value: craneCount, icon: HardHat, color: "text-teal-600", bg: "bg-teal-50 dark:bg-teal-950/30" },
+    { href: "/draeger-calibration", label: "Calibrations", value: draegerCount, icon: TestTube2, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30" },
+  ] as const;
+
   return (
     <motion.div
-      className="space-y-4"
+      className="space-y-5"
       variants={stagger}
       initial="hidden"
       animate="show"
     >
-      {/* ── Header ── */}
-      <motion.div variants={fadeUp} className="flex items-end justify-between -mt-8">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground font-display leading-tight">
-            Safety Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            EHS Ireland &mdash; Overview
-          </p>
+      {/* ── ISP Gradient Banner ── */}
+      <motion.div variants={fadeUp}>
+        <div className="relative overflow-hidden rounded-xl shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, #0A1A6B 0%, #0F238C 40%, #1E3AAF 70%, #2952CC 100%)",
+          }}
+        >
+          {/* Glass overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] via-transparent to-black/10" />
+          {/* Dot grid pattern */}
+          <div className="absolute inset-0 opacity-[0.04]" style={{
+            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }} />
+
+          <div className="relative z-10 px-6 py-5 lg:px-8 lg:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Left: title + subtitle */}
+              <div className="flex items-start gap-4">
+                <div className="hidden sm:flex items-center justify-center w-11 h-11 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-white/80" />
+                </div>
+                <div>
+                  <h2 className="text-lg lg:text-xl font-bold text-white leading-tight">
+                    ISP &ndash; Integrated Safety Plan
+                  </h2>
+                  <p className="text-sm text-white/60 mt-0.5">
+                    Your last minute risk assessment &mdash; Plan, assess, and manage safety in one place
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: search + new plan button */}
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="relative hidden md:block">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
+                  <Input
+                    type="search"
+                    placeholder="Search safety plans..."
+                    className="pl-9 h-9 w-56 text-xs bg-white/10 border-white/15 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/30"
+                  />
+                </div>
+                <Link href="/safety-plan">
+                  <Button className="bg-white text-primary hover:bg-white/90 font-semibold h-9 px-4 text-sm gap-2 shadow-md">
+                    <Plus className="w-4 h-4" />
+                    New Plan
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick stats strip */}
+            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-white/40" />
+                <span className="text-xs text-white/50">Safety Index</span>
+                <span className="text-sm font-bold text-white font-mono">{safetyIndex}</span>
+                <span className="text-[10px] text-white/30 font-mono">/100</span>
+                <div className="flex items-center gap-1 ml-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-400" />
+                  <span className="text-[11px] font-semibold text-emerald-400">+4.2%</span>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-white/40" />
+                <span className="text-xs text-white/50">Active Teams</span>
+                <span className="text-sm font-bold text-white font-mono">{activePlans}</span>
+              </div>
+              <div className="hidden md:flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-white/40" />
+                <span className="text-xs text-white/50">Overdue Reviews</span>
+                <span className="text-sm font-bold text-amber-400 font-mono">{correctiveActions.overdue}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* ── Row 1: Safety Index ── */}
-      <motion.div variants={fadeUp}>
-        <Card className="overflow-hidden relative bg-primary text-primary-foreground border-0">
-          <CardContent className="py-6 px-7 relative z-10">
-            <div className="absolute inset-0 opacity-[0.06] z-0" style={{
-              backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
-              backgroundSize: "18px 18px",
-            }} />
-            {/* Dark overlay for depth */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-white/10 z-0" />
-            <div className="relative z-10 flex items-center gap-6">
-              <div className="flex items-center gap-3 mr-auto">
-                <ShieldCheck className="w-5 h-5 opacity-40" />
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">Safety Index</p>
-                  <div className="flex items-end gap-1.5">
-                    <span className="text-3xl font-bold font-mono leading-none">{safetyIndex}</span>
-                    <span className="text-sm opacity-40 font-mono mb-0.5">/100</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 text-emerald-300" />
-                <span className="text-[11px] font-semibold text-emerald-300">+4.2%</span>
-              </div>
-              <div className="hidden sm:flex items-center gap-1 w-32">
-                <div className="flex rounded-full overflow-hidden h-1.5 flex-1">
-                  <div className="bg-red-400 flex-1" />
-                  <div className="bg-amber-400 flex-1" />
-                  <div className="bg-emerald-400 flex-1" />
-                  <div className="bg-teal-400 flex-1" />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* ── Row 2: 5 metric‑action cards ── */}
+      {/* ── Metric Cards Row ── */}
       <motion.div
-        className="grid grid-cols-2 lg:grid-cols-5 gap-3"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         variants={fadeUp}
       >
-        {([
-          { href: "/safety-plan", label: "Active Plans", value: activePlans, icon: ClipboardList },
-          { href: "/permit-to-work", label: "Open Permits", value: openPermits, icon: FileText },
-          { href: "/incidents", label: "Incidents", value: openIncidents, icon: AlertTriangle },
-          { href: "/crane-inspection", label: "Crane Checks", value: craneCount, icon: HardHat },
-          { href: "/draeger-calibration", label: "Calibrations", value: draegerCount, icon: TestTube2 },
-        ] as const).map((card) => (
+        {metrics.map((card) => (
           <Link key={card.href} href={card.href}>
-            <Card className="border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
-              <CardContent className="p-2 flex flex-col items-center text-center gap-0.5">
-                <div className="p-1 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
-                  <card.icon className="w-3.5 h-3.5 text-primary" />
+            <Card className="border border-border/60 shadow-sm hover:shadow-md hover:border-primary/20 transition-all cursor-pointer group bg-card">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${card.bg} shrink-0 group-hover:scale-105 transition-transform`}>
+                  <card.icon className={`w-4 h-4 ${card.color}`} />
                 </div>
-                <p className="text-lg font-bold text-foreground font-mono leading-none">{card.value}</p>
-                <p className="text-[9px] font-medium text-muted-foreground leading-tight">{card.label}</p>
+                <div className="min-w-0">
+                  <p className="text-xl font-bold text-foreground font-mono leading-none">{card.value}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground mt-0.5 leading-tight truncate">{card.label}</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
         ))}
       </motion.div>
 
-      {/* ── Row 3: Charts ── */}
+      {/* ── Charts Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Corrective Actions */}
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm h-full">
-            <CardHeader className="pb-2 pt-4 px-4">
+          <Card className="shadow-sm h-full border-border/60">
+            <CardHeader className="pb-2 pt-4 px-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">Corrective Actions</CardTitle>
                 <Link href="/incidents">
@@ -254,7 +288,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0">
+            <CardContent className="px-5 pb-4 pt-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {[
                   { label: "Completed", value: correctiveActions.completed, color: CHART_COLORS.emerald, bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
@@ -286,13 +320,13 @@ export default function DashboardPage() {
 
         {/* Health & Safety Culture Trend */}
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm h-full">
-            <CardHeader className="pb-2 pt-4 px-4">
+          <Card className="shadow-sm h-full border-border/60">
+            <CardHeader className="pb-2 pt-4 px-5">
               <CardTitle className="text-sm font-bold">
                 Health &amp; Safety Culture Trend
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0">
+            <CardContent className="px-5 pb-4 pt-0">
               <div className="h-[210px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={cultureTrendData}>
@@ -312,15 +346,15 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* ── Row 4: Donut + Recent Plans ── */}
+      {/* ── Donut + Recent Plans ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Incidents by Type */}
         <motion.div variants={fadeUp} className="lg:col-span-2">
-          <Card className="shadow-sm h-full">
-            <CardHeader className="pb-1 pt-4 px-4">
+          <Card className="shadow-sm h-full border-border/60">
+            <CardHeader className="pb-1 pt-4 px-5">
               <CardTitle className="text-sm font-bold">Incidents by Type</CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0">
+            <CardContent className="px-5 pb-4 pt-0">
               {incidentsByType.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-6 text-center">No incidents recorded</p>
               ) : (
@@ -354,8 +388,8 @@ export default function DashboardPage() {
 
         {/* Recent Safety Plans */}
         <motion.div variants={fadeUp} className="lg:col-span-3">
-          <Card className="shadow-sm h-full">
-            <CardHeader className="pb-1 pt-4 px-4">
+          <Card className="shadow-sm h-full border-border/60">
+            <CardHeader className="pb-1 pt-4 px-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">Recent Safety Plans</CardTitle>
                 <Link href="/safety-plan">
@@ -368,7 +402,7 @@ export default function DashboardPage() {
             <CardContent className="px-0 pb-2 pt-0">
               <div className="divide-y divide-border">
                 {recentPlans.length === 0 ? (
-                  <p className="text-sm text-muted-foreground px-4 py-4">No safety plans yet</p>
+                  <p className="text-sm text-muted-foreground px-5 py-4">No safety plans yet</p>
                 ) : (
                   recentPlans.map((plan: any) => {
                     const statusStyles: Record<string, { label: string; className: string }> = {
@@ -380,7 +414,7 @@ export default function DashboardPage() {
                     const st = statusStyles[plan.status] || statusStyles.draft;
                     return (
                       <Link key={plan.id} href="/safety-plan">
-                        <div className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="flex items-center justify-between px-5 py-2.5 hover:bg-muted/50 transition-colors cursor-pointer">
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-foreground truncate">{plan.taskName || `Plan #${plan.id}`}</p>
                             <p className="text-[11px] text-muted-foreground">{plan.region || plan.location} &middot; {plan.date}</p>

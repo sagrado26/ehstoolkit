@@ -286,6 +286,15 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Consistent card hover elevation */
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
 }
 
 /* rule: rendering-content-visibility — skip layout/paint for off-screen list rows */

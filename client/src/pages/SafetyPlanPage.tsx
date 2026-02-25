@@ -15,7 +15,7 @@ import type { SafetyPlan, Permit } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { SafetyPlanView } from "@/features/safety-plan/components/SafetyPlanView";
 import { getHazardInfo } from "@/features/safety-plan/hazard-data";
-import { Eye } from "lucide-react";
+import { Eye, ClipboardList } from "lucide-react";
 import { useLocation } from "wouter";
 
 type View = "list" | "form" | "view";
@@ -306,7 +306,28 @@ export default function SafetyPlanPage() {
 
   if (view === "list") {
     return (
-      <div>
+      <div className="space-y-4">
+        {/* ISP List Banner */}
+        <div className="relative overflow-hidden rounded-xl shadow-md"
+          style={{ background: "linear-gradient(135deg, #0A1A6B 0%, #0F238C 40%, #1E3AAF 70%, #2952CC 100%)" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-black/10" />
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }} />
+          <div className="relative z-10 px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10">
+                <ClipboardList className="w-5 h-5 text-white/80" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">View All ISP</h1>
+                <p className="text-sm text-white/50">Manage and review all integrated safety plans</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <SafetyPlanList onNew={startNewForm} onEdit={(id) => {
           const plan = existingPlans.find(p => p.id === id);
           if (plan) { setViewingPlan(plan); setView("view"); }
@@ -338,8 +359,21 @@ export default function SafetyPlanPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border border-border rounded-xl overflow-hidden bg-card shadow-sm">
+    <div className="space-y-4">
+      {/* Form page title */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10">
+          <ClipboardList className="w-4 h-4 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-foreground leading-tight">
+            {editingPlanId ? "Edit Safety Plan (ISP)" : "New Safety Plan (ISP)"}
+          </h1>
+          <p className="text-xs text-muted-foreground">Complete all steps to submit your safety assessment</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border border-border/60 rounded-xl overflow-hidden bg-card shadow-md">
         <StepperBar
           currentStep={step}
           completedSteps={completedSteps}
@@ -354,10 +388,15 @@ export default function SafetyPlanPage() {
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-2xl mx-auto">
               {/* Content header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-                <div>
-                  <h2 className="text-lg font-display font-bold text-foreground">{STEP_TITLES[step]}</h2>
-                  <p className="text-xs text-muted-foreground mt-1">Step {step} of 4</p>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary">{step}</span>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">{STEP_TITLES[step]}</h2>
+                    <p className="text-[11px] text-muted-foreground">Step {step} of 4 {step === 1 && "— Basic task information"}</p>
+                  </div>
                 </div>
               </div>
               {step === 1 && (

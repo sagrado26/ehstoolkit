@@ -61,7 +61,7 @@ export function StepperBar({ currentStep, completedSteps, onStepClick, prefilled
       </div>
 
       {/* ── Desktop: vertical sidebar — matches nav sidebar brand styling ── */}
-      <div className="hidden md:flex w-56 shrink-0 flex-col bg-slate-800 text-white">
+      <div className="hidden md:flex w-56 shrink-0 flex-col text-white" style={{ background: "linear-gradient(180deg, #0A1A6B 0%, #0F238C 60%, #0A1A6B 100%)" }}>
         {/* Header */}
         <div className="px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-2.5 mb-2">

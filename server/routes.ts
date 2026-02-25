@@ -11,10 +11,12 @@ import { registerSRBRoutes } from "./routes/srb";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
+    const useDatabase = process.env.USE_DATABASE === "true";
     res.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
+      storageMode: useDatabase ? "PostgreSQL Database" : "In-Memory"
     });
   });
 

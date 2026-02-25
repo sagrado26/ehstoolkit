@@ -11,13 +11,11 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
-        // ASML Brand Design System
+        // Brand colors — matching code.html reference
         brand: {
-          DEFAULT: '#0F238C',  // ASML Indigo — primary brand
-          dark: '#0A1A6B',     // Dark shade — sidebar gradients
-          light: '#1E3AAF',    // Light shade — hover/active states
-          signal: '#E8590C',   // Signal accent — high-impact CTAs, alerts
-          teal: '#288498',     // Teal — safety concern badges
+          dark: '#002060',     // Dark blue for sidebar
+          light: '#254a9e',    // Lighter blue for active states
+          teal: '#288498',     // Teal for safety concern badges
           red: '#B91C1C',      // Red for High Risk text
         },
         // status colors are defined below with sidebar
