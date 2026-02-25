@@ -58,11 +58,11 @@ export default function SRBPage() {
       const ctx: SRBLaunchContext = JSON.parse(raw);
       const escalated = ctx.hazards.filter((h) => {
         const a = ctx.assessments[h];
-        return a && a.severity * a.likelihood >= 8;
+        return a && a.severity * a.likelihood > 5;
       });
 
       if (escalated.length === 0) {
-        toast({ title: "No high-risk hazards found", description: "SRB requires hazards with risk score 8 or above.", variant: "destructive" });
+        toast({ title: "No high-risk hazards found", description: "SRB requires hazards with risk score above 5.", variant: "destructive" });
         return;
       }
 

@@ -28,7 +28,7 @@ const ISO_LEVELS = [
     key: "L3",
     title: "L3 — Work Instructions: Detailed SRB Procedure",
     content: [
-      "3.1 Trigger Criteria: Any hazard assessment with severity × likelihood ≥ 8 automatically triggers SRB requirement. The system flags these hazards and prevents work commencement without SRB completion.",
+      "3.1 Trigger Criteria: Any hazard assessment with severity × likelihood > 5 automatically triggers SRB requirement. The system flags these hazards and prevents work commencement without SRB completion.",
       "3.2 Pre-SRB Questions: The initiating Lead must complete all five pre-SRB justification questions before the board convenes. Incomplete questions invalidate the SRB initiation.",
       "3.3 Hazard Re-assessment: Each escalated hazard must be individually re-assessed. The additional safety measures field must describe controls beyond those in the original safety plan. The mitigation plan must be specific, actionable, and measurable.",
       "3.4 Risk Acceptance Threshold: The board may not proceed to sign-off if any reassessed hazard score exceeds 3 (LOW band). Additional controls must be identified until all scores reach LOW.",

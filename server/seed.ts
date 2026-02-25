@@ -37,7 +37,7 @@ async function seed() {
       assessments: {
         "Electrical Work": { severity: 3, likelihood: 2, mitigation: "Proper LOTO procedures" },
         "Floor/Barricades": { severity: 2, likelihood: 2, mitigation: "Area cordoned off" }
-      },
+      } as Record<string, { severity: number; likelihood: number; mitigation: string }>,
       leadName: "John Murphy",
       approverName: "Sarah O'Brien",
       engineers: ["Mike Chen", "Lisa Park"],
@@ -69,7 +69,7 @@ async function seed() {
       assessments: {
         "+35lb Manual Lifts": { severity: 3, likelihood: 3, mitigation: "Use mechanical lifting aids" },
         "Working at Height": { severity: 4, likelihood: 2, mitigation: "Fall protection equipment required" }
-      },
+      } as Record<string, { severity: number; likelihood: number; mitigation: string }>,
       leadName: "Sarah O'Brien",
       approverName: null,
       engineers: ["Tom Walsh"],

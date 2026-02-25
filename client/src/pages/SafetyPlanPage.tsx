@@ -295,12 +295,12 @@ export default function SafetyPlanPage() {
     navigate("/safety-review-board");
   };
 
-  // Determine if a plan has escalated hazards (score >= 8)
+  // Determine if a plan has escalated hazards (score > 5)
   const hasHighRiskHazards = (plan: SafetyPlan) => {
     if (!plan.hazards || !plan.assessments) return false;
     return plan.hazards.some(h => {
       const a = (plan.assessments as Record<string, { severity: number; likelihood: number }>)[h];
-      return a && a.severity * a.likelihood >= 8;
+      return a && a.severity * a.likelihood > 5;
     });
   };
 
