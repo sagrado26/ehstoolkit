@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="space-y-0"
+      className="space-y-4"
       variants={stagger}
       initial="hidden"
       animate="show"
@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
       {/* ── Row 2: 5 metric‑action cards ── */}
       <motion.div
-        className="grid grid-cols-2 lg:grid-cols-5 gap-1.5"
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3"
         variants={fadeUp}
       >
         {([

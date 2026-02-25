@@ -189,6 +189,7 @@ export const permits = pgTable("permits", {
   manager: text("manager").notNull(),
   location: text("location").notNull().default(""),
   workType: text("work_type").notNull().default(""),
+  permitType: text("permit_type").notNull().default("general"),
   workDescription: text("work_description").notNull().default(""),
   spq1: text("spq1").notNull().default("no"),
   spq2: text("spq2").notNull().default("no"),
@@ -197,12 +198,81 @@ export const permits = pgTable("permits", {
   spq5: text("spq5").notNull().default("no"),
   authorityName: text("authority_name").notNull().default(""),
   status: text("status").notNull().default("draft"),
+  // Confined Space fields
+  o2Level: text("o2_level"),
+  nitrogenPurge: text("nitrogen_purge"),
+  entrySupervisor: text("entry_supervisor"),
+  standbyPerson: text("standby_person"),
+  // Hazardous Space fields
+  hazardAssessment: text("hazard_assessment"),
+  respiratoryProtection: text("respiratory_protection"),
+  isolationMethods: text("isolation_methods"),
+  // Hazardous Chemicals fields
+  chemicalInventory: text("chemical_inventory"),
+  sdsDocuments: text("sds_documents"),
+  ppeRequirements: text("ppe_requirements"),
+  containmentPlan: text("containment_plan"),
+  // SRB fields
+  srbRequired: text("srb_required").default("no"),
+  srbPrimaryRoute: text("srb_primary_route"),
+  srbSecondaryRoute: text("srb_secondary_route"),
+  srbAssemblyPoint: text("srb_assembly_point"),
+  srbEmergencyContact: text("srb_emergency_contact"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertPermitSchema = createInsertSchema(permits).omit({ id: true, createdAt: true });
 export type Permit = typeof permits.$inferSelect;
 export type InsertPermit = z.infer<typeof insertPermitSchema>;
+
+// ─── Permit Gas Measurements ──────────────────────────────────────────────
+export const permitGasMeasurements = pgTable("permit_gas_measurements", {
+  id: serial("id").primaryKey(),
+  permitId: integer("permit_id").notNull(),
+  o2Level: text("o2_level").notNull(),
+  co2Level: text("co2_level").notNull(),
+  coLevel: text("co_level").notNull(),
+  h2sLevel: text("h2s_level").notNull().default("0"),
+  lelLevel: text("lel_level").notNull().default("0"),
+  measuredBy: text("measured_by").notNull(),
+  alertTriggered: text("alert_triggered").notNull().default("no"),
+  notes: text("notes"),
+  measuredAt: timestamp("measured_at").defaultNow(),
+});
+
+export const insertGasMeasurementSchema = createInsertSchema(permitGasMeasurements).omit({ id: true, measuredAt: true });
+export type PermitGasMeasurement = typeof permitGasMeasurements.$inferSelect;
+export type InsertGasMeasurement = z.infer<typeof insertGasMeasurementSchema>;
+
+// ─── Permit Approvals ─────────────────────────────────────────────────────
+export const permitApprovals = pgTable("permit_approvals", {
+  id: serial("id").primaryKey(),
+  permitId: integer("permit_id").notNull(),
+  approverRole: text("approver_role").notNull(),
+  approverName: text("approver_name").notNull(),
+  status: text("status").notNull().default("pending"),
+  comments: text("comments"),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPermitApprovalSchema = createInsertSchema(permitApprovals).omit({ id: true, approvedAt: true, createdAt: true });
+export type PermitApproval = typeof permitApprovals.$inferSelect;
+export type InsertPermitApproval = z.infer<typeof insertPermitApprovalSchema>;
+
+// ─── Permit Sign-Offs ─────────────────────────────────────────────────────
+export const permitSignOffs = pgTable("permit_sign_offs", {
+  id: serial("id").primaryKey(),
+  permitId: integer("permit_id").notNull(),
+  role: text("role").notNull(),
+  signedBy: text("signed_by").notNull(),
+  signatureData: text("signature_data"),
+  signedAt: timestamp("signed_at").defaultNow(),
+});
+
+export const insertPermitSignOffSchema = createInsertSchema(permitSignOffs).omit({ id: true, signedAt: true });
+export type PermitSignOff = typeof permitSignOffs.$inferSelect;
+export type InsertPermitSignOff = z.infer<typeof insertPermitSignOffSchema>;
 
 // ─── Crane Inspections ──────────────────────────────────────────────────────
 export const craneInspections = pgTable("crane_inspections", {

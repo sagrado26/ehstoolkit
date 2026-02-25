@@ -12,16 +12,21 @@ let createLogger: any = null;
 let viteConfig: any = null;
 let nanoid: any = null;
 
-if (process.env.NODE_ENV === "development") {
-  const vite = await import("vite");
-  const config = await import("../vite.config");
-  const nano = await import("nanoid");
+async function initializeVite() {
+  if (process.env.NODE_ENV === "development") {
+    const vite = await import("vite");
+    const config = await import("../vite.config");
+    const nano = await import("nanoid");
 
-  createViteServer = vite.createServer;
-  createLogger = vite.createLogger;
-  viteConfig = config.default;
-  nanoid = nano.nanoid;
+    createViteServer = vite.createServer;
+    createLogger = vite.createLogger;
+    viteConfig = config.default;
+    nanoid = nano.nanoid;
+  }
 }
+
+// Initialize vite modules
+await initializeVite();
 
 const viteLogger = process.env.NODE_ENV === "development" ? createLogger() : null;
 
@@ -52,7 +57,7 @@ export async function setupVite(app: Express, server: Server) {
     configFile: false,
     customLogger: {
       ...viteLogger,
-      error: (msg, options) => {
+      error: (msg: any, options?: any) => {
         viteLogger.error(msg, options);
         process.exit(1);
       },
