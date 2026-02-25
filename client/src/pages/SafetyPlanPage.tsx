@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SafetyPlanView } from "@/features/safety-plan/components/SafetyPlanView";
 import { getHazardInfo } from "@/features/safety-plan/hazard-data";
 import { Eye } from "lucide-react";
+import { useLocation } from "wouter";
 
 type View = "list" | "form" | "view";
 
@@ -65,6 +66,7 @@ export default function SafetyPlanPage() {
   const [formDirty, setFormDirty] = useState(false);
   const qc = useQueryClient();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   /* rule: async-parallel — fetch independent data in parallel */
   const { data: preferences } = useQuery<{
@@ -281,6 +283,27 @@ export default function SafetyPlanPage() {
     }
   };
 
+  const handleStartSRB = (plan: SafetyPlan) => {
+    sessionStorage.setItem("srbLaunchContext", JSON.stringify({
+      safetyPlanId: plan.id,
+      taskName: plan.taskName,
+      leadName: plan.leadName,
+      engineers: plan.engineers || [],
+      hazards: plan.hazards || [],
+      assessments: plan.assessments || {},
+    }));
+    navigate("/safety-review-board");
+  };
+
+  // Determine if a plan has escalated hazards (score >= 8)
+  const hasHighRiskHazards = (plan: SafetyPlan) => {
+    if (!plan.hazards || !plan.assessments) return false;
+    return plan.hazards.some(h => {
+      const a = (plan.assessments as Record<string, { severity: number; likelihood: number }>)[h];
+      return a && a.severity * a.likelihood >= 8;
+    });
+  };
+
   if (view === "list") {
     return (
       <div>
@@ -307,6 +330,7 @@ export default function SafetyPlanPage() {
           onBack={() => { setViewingPlan(null); setView("list"); }}
           onEdit={userOnTeam && viewingPlan.status !== "approved" ? () => editPlan(viewingPlan) : undefined}
           onReuse={!userOnTeam ? () => reusePlan(viewingPlan) : undefined}
+          onStartSRB={hasHighRiskHazards(viewingPlan) ? () => handleStartSRB(viewingPlan) : undefined}
           onViewReusedPlan={viewPlanById}
         />
       </div>

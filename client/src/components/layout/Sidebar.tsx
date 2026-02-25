@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, ClipboardList, FileText, AlertTriangle,
-  HardHat, TestTube2, FolderOpen, Settings, UserCog,
+  HardHat, TestTube2, FolderOpen, Settings, UserCog, ShieldAlert,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useTheme, isLightNav } from "@/hooks/use-theme";
@@ -16,6 +16,7 @@ const NAV = [
     group: "SAFETY",
     items: [
       { label: "Safety Plan", href: "/safety-plan", icon: ClipboardList },
+      { label: "Safety Review Board", href: "/safety-review-board", icon: ShieldAlert },
       { label: "Permit to Work", href: "/permit-to-work", icon: FileText },
       { label: "Incidents", href: "/incidents", icon: AlertTriangle },
     ],

@@ -274,6 +274,67 @@ export const insertPermitSignOffSchema = createInsertSchema(permitSignOffs).omit
 export type PermitSignOff = typeof permitSignOffs.$inferSelect;
 export type InsertPermitSignOff = z.infer<typeof insertPermitSignOffSchema>;
 
+// ─── Safety Review Board (SRB) ──────────────────────────────────────────────
+export type SRBPreQuestions = {
+  reasonForEscalation: string;
+  procedureOrCondition: string;
+  serviceOrderNumber: string;
+  coachUpdateNeeded: "yes" | "no";
+  customerSafetyCompleted: "yes" | "no";
+};
+
+export type SRBHazardReassessment = {
+  hazardName: string;
+  originalSeverity: number;
+  originalLikelihood: number;
+  originalRiskScore: number;
+  originalMitigation: string;
+  additionalSafetyMeasures: string;
+  mitigationPlan: string;
+  newSeverity: number;
+  newLikelihood: number;
+};
+
+export type SRBAcknowledgements = {
+  ack1_hazardReEvaluated: boolean;
+  ack2_participantsReviewed: boolean;
+  ack3_controlsValidated: boolean;
+  ack4_residualRiskAgreed: boolean;
+  ack5_safeActionAcknowledged: boolean;
+  ack6_newRiskAcceptable: boolean;
+};
+
+export type SRBSignatory = {
+  role: "EHS Specialist" | "Fab Team Lead" | "CS Management";
+  name: string;
+  signatureData: string | null;
+  signedAt: string | null;
+};
+
+export const srbRecords = pgTable("srb_records", {
+  id: serial("id").primaryKey(),
+  safetyPlanId: integer("safety_plan_id").notNull(),
+  status: text("status").notNull().default("draft"),
+  serviceOrderNumber: text("service_order_number").notNull().default(""),
+  preQuestions: jsonb("pre_questions").$type<SRBPreQuestions>().notNull(),
+  escalatedHazards: jsonb("escalated_hazards").$type<string[]>().notNull().default([]),
+  originalAssessments: jsonb("original_assessments").$type<Record<string, Assessment>>().notNull().default({}),
+  reassessments: jsonb("reassessments").$type<SRBHazardReassessment[]>().notNull().default([]),
+  teamMembers: jsonb("team_members").$type<string[]>().notNull().default([]),
+  acknowledgements: jsonb("acknowledgements").$type<SRBAcknowledgements | null>(),
+  signatories: jsonb("signatories").$type<SRBSignatory[]>().notNull().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertSRBRecordSchema = createInsertSchema(srbRecords).omit({
+  id: true, createdAt: true, updatedAt: true, completedAt: true,
+});
+
+export type SRBRecord = typeof srbRecords.$inferSelect;
+export type InsertSRBRecord = z.infer<typeof insertSRBRecordSchema>;
+
 // ─── Crane Inspections ──────────────────────────────────────────────────────
 export const craneInspections = pgTable("crane_inspections", {
   id: serial("id").primaryKey(),
