@@ -314,8 +314,8 @@ export default function SafetyPlanPage() {
   }
 
   return (
-    <div className="-mt-8">
-      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border-2 border-slate-800 rounded-lg overflow-hidden bg-card shadow-sm">
+    <div>
+      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border border-border rounded-xl overflow-hidden bg-card shadow-sm">
         <StepperBar
           currentStep={step}
           completedSteps={completedSteps}
@@ -327,13 +327,13 @@ export default function SafetyPlanPage() {
         />
 
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-2xl mx-auto">
               {/* Content header */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
                 <div>
-                  <h2 className="text-base font-bold text-gray-900">{STEP_TITLES[step]}</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Step {step} of 4</p>
+                  <h2 className="text-lg font-display font-bold text-foreground">{STEP_TITLES[step]}</h2>
+                  <p className="text-xs text-muted-foreground mt-1">Step {step} of 4</p>
                 </div>
               </div>
               {step === 1 && (
@@ -370,7 +370,7 @@ export default function SafetyPlanPage() {
                 />
               )}
               {step > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                <div className="flex items-center justify-between mt-8 pt-4 border-t border-border">
                   <Button type="button" variant="outline" onClick={() => setStep(s => s - 1 as any)}>&larr; Back</Button>
                   <div className="flex items-center gap-2">
                     {step === 4 && (
