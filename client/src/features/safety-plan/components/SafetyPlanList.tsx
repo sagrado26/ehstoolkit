@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
@@ -83,22 +83,22 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
     return counts;
   }, [auditLogs]);
 
-  const handleSort = (field: string) => setSort(prev => nextSort(prev.field, prev.dir, field));
+  /* rule: rerender-functional-setstate — stable callback refs */
+  const handleSort = useCallback((field: string) => setSort(prev => nextSort(prev.field, prev.dir, field)), []);
+  const handleSearch = useCallback((val: string) => { setSearch(val); setPage(1); }, []);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paged = showAll ? sorted : sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleSearch = (val: string) => { setSearch(val); setPage(1); };
-
   const show = (key: string) => colVisible[key] !== false;
 
   return (
-    <Card className="overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border">
+    <Card className="overflow-hidden border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border bg-slate-50/50">
         <div>
-          <h1 className="text-xl font-bold">Safety Plans</h1>
+          <h1 className="text-xl font-bold text-gray-900">Integrated Safety Plans</h1>
           <p className="text-sm text-muted-foreground">
-            Pre-Task Plans (PTP) &middot; {(plans as any[]).length} record{(plans as any[]).length !== 1 ? "s" : ""}
+            Manage and review active risk assessments &middot; {(plans as any[]).length} total
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -141,7 +141,7 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
           {isAdmin && (
             <ColumnToggle columns={COLUMNS} visible={colVisible} onChange={setColVisible} />
           )}
-          <Button onClick={onNew} className="gap-2">
+          <Button onClick={onNew} className="gap-2 bg-brand-dark hover:bg-brand-dark/90">
             <Plus className="h-4 w-4" /> New Plan
           </Button>
         </div>
@@ -172,7 +172,7 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
                 const version = versionCounts[p.id] || 1;
                 const isExpanded = expandedId === p.id;
                 return (
-                  <div key={p.id} className="bg-background">
+                  <div key={p.id} className="bg-background list-row-virtualized">
                     <button
                       type="button"
                       className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-primary/5 transition-colors"
@@ -257,7 +257,7 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
                     return (
                       <tr
                         key={p.id}
-                        className="border-b border-border last:border-0 hover:bg-primary/5 cursor-pointer transition-colors"
+                        className="border-b border-border last:border-0 hover:bg-primary/5 cursor-pointer transition-all table-row-virtualized group/row"
                         onClick={() => onEdit(p.id)}
                       >
                         {show("plan") && (

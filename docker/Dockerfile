@@ -1,6 +1,9 @@
 # Multi-stage Dockerfile for EHS Safety Tool
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
+
+# Update system packages for security
+RUN apk update && apk upgrade --no-cache
 
 # Set working directory
 WORKDIR /app
@@ -18,7 +21,10 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
+
+# Update system packages for security
+RUN apk update && apk upgrade --no-cache
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -45,15 +51,15 @@ COPY --from=builder --chown=nodejs:nodejs /app/shared ./shared
 USER nodejs
 
 # Expose port
-EXPOSE 5000
+EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+    CMD node -e "require('http').get('http://localhost:${PORT}/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
 
 # Start the application
 ENTRYPOINT ["dumb-init", "--"]

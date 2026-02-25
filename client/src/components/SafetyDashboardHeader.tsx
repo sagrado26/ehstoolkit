@@ -20,11 +20,11 @@ export default function SafetyDashboardHeader({ userName }: SafetyDashboardHeade
             </Button>
           )}
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <span className="text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider">EHS Ireland</span>
             </div>
-            <h1 className="text-base sm:text-xl lg:text-2xl font-bold leading-tight">Safety Tracking Dashboard</h1>
+            <h1 className="text-base sm:text-xl lg:text-2xl font-bold leading-snug">Safety Tracking Dashboard</h1>
           </div>
         </div>
 
@@ -35,7 +35,7 @@ export default function SafetyDashboardHeader({ userName }: SafetyDashboardHeade
           <Button variant="ghost" size="icon" data-testid="button-notifications">
             <Bell className="w-5 h-5" />
           </Button>
-          
+
           <div className="flex items-center gap-2">
             <Avatar className="w-9 h-9">
               <AvatarImage src="" />

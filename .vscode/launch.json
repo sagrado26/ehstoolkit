@@ -20,8 +20,7 @@
             "name": "Debug Client (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:5000",
+            "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}/client",
             "sourceMapPathOverrides": {
                 "webpack:///src/*": "${webRoot}/src/*"
@@ -32,7 +31,9 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/node_modules/.bin/tsx",
-            "args": ["${workspaceFolder}/server/index.ts"],
+            "args": [
+                "${workspaceFolder}/server/index.ts"
+            ],
             "env": {
                 "NODE_ENV": "development",
                 "DATABASE_URL": "postgresql://postgres:postgres@db:5432/safetyplan"

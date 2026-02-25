@@ -1,287 +1,403 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  ClipboardList, FileText, HardHat, TestTube2, AlertTriangle,
-  TrendingUp, ShieldCheck, ArrowUpRight, CheckCircle2, Clock, AlertCircle,
+  ClipboardList, FileText, HardHat, AlertTriangle,
+  ArrowUpRight, TrendingUp, ShieldCheck, TestTube2,
 } from "lucide-react";
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, CartesianGrid, PieChart, Pie, Cell,
+  BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
+import { Link } from "wouter";
+import { motion } from "framer-motion";
+
+const cultureTrendData = [
+  { month: "Sep", score: 42, reports: 8 },
+  { month: "Oct", score: 44, reports: 11 },
+  { month: "Nov", score: 40, reports: 9 },
+  { month: "Dec", score: 45, reports: 14 },
+  { month: "Jan", score: 47, reports: 12 },
+  { month: "Feb", score: 49, reports: 10 },
+];
+
+/* Theme-aware primary via CSS var; semantic colors stay fixed */
+const PRIMARY = "hsl(var(--primary))";
+const PRIMARY_FG = "hsl(var(--primary-foreground))";
+const CHART_COLORS = {
+  orange: "#E8590C",
+  emerald: "#10b981",
+  amber: "#f59e0b",
+  red: "#ef4444",
+  teal: "#288498",
+  blue: "#3b82f6",
+  slate: "#64748b",
+};
+
+const INCIDENT_TYPE_COLORS: Record<string, string> = {
+  "near-miss": CHART_COLORS.amber,
+  "injury": CHART_COLORS.red,
+  "property-damage": CHART_COLORS.blue,
+  "environmental": CHART_COLORS.teal,
+};
+
+const INCIDENT_TYPE_LABELS: Record<string, string> = {
+  "near-miss": "Near Miss",
+  "injury": "Injury",
+  "property-damage": "Property",
+  "environmental": "Environmental",
+};
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 export default function DashboardPage() {
-  const { data: plans = [] } = useQuery({ queryKey: ["/api/safety-plans"] });
-  const { data: permits = [] } = useQuery({ queryKey: ["/api/permits"] });
-  const { data: craneInspections = [] } = useQuery({ queryKey: ["/api/crane-inspections"] });
-  const { data: calibrations = [] } = useQuery({ queryKey: ["/api/draeger-calibrations"] });
-  const { data: incidents = [] } = useQuery({ queryKey: ["/api/incidents"] });
+  const [
+    { data: plans = [] },
+    { data: permits = [] },
+    { data: incidents = [] },
+    { data: craneInspections = [] },
+    { data: draegerCalibrations = [] },
+  ] = useQueries({
+    queries: [
+      { queryKey: ["/api/safety-plans"] },
+      { queryKey: ["/api/permits"] },
+      { queryKey: ["/api/incidents"] },
+      { queryKey: ["/api/crane-inspections"] },
+      { queryKey: ["/api/draeger-calibrations"] },
+    ],
+  });
 
-  const activePlans = (plans as any[]).filter(p => p.status === "pending").length;
-  const openPermits = (permits as any[]).filter(p => p.status !== "approved").length;
-  const openIncidents = (incidents as any[]).filter((i: any) => i.status === "open").length;
-  const investigatingIncidents = (incidents as any[]).filter((i: any) => i.status === "investigating").length;
+  const activePlans = useMemo(
+    () => (plans as any[]).filter(p => p.status !== "approved" && p.status !== "rejected").length,
+    [plans],
+  );
+  const openPermits = useMemo(
+    () => (permits as any[]).filter(p => p.status !== "approved").length,
+    [permits],
+  );
+  const openIncidents = useMemo(
+    () => (incidents as any[]).filter((i: any) => i.status !== "closed").length,
+    [incidents],
+  );
+  const craneCount = useMemo(() => (craneInspections as any[]).length, [craneInspections]);
+  const draegerCount = useMemo(() => (draegerCalibrations as any[]).length, [draegerCalibrations]);
 
-  const totalIncidents = (incidents as any[]).length;
-  const highSeverity = (incidents as any[]).filter((i: any) => i.severity >= 3).length;
-  const safetyIndex = Math.max(0, Math.min(100, 100 - (totalIncidents * 5) - (highSeverity * 10) - (openPermits * 3)));
+  const safetyIndex = useMemo(() => {
+    const allPlans = plans as any[];
+    const allPermits = permits as any[];
+    const allIncidents = incidents as any[];
+    const total = allPlans.length + allPermits.length + allIncidents.length;
+    if (total === 0) return 49;
+    const resolved =
+      allPlans.filter(p => p.status === "approved").length +
+      allPermits.filter(p => p.status === "approved").length +
+      allIncidents.filter(i => i.status === "closed").length;
+    return Math.round((resolved / total) * 100);
+  }, [plans, permits, incidents]);
 
-  const correctiveActions = { completed: 12, overdue: 3, inProgress: 7, total: 22 };
+  const correctiveActions = useMemo(() => {
+    const all = incidents as any[];
+    return {
+      completed: all.filter(i => i.status === "closed").length,
+      inProgress: all.filter(i => i.status === "investigating").length,
+      overdue: all.filter(i => i.status === "open").length,
+    };
+  }, [incidents]);
 
-  const cultureTrend = [
-    { month: "Sep", score: 72, reports: 8 },
-    { month: "Oct", score: 68, reports: 12 },
-    { month: "Nov", score: 74, reports: 6 },
-    { month: "Dec", score: 79, reports: 9 },
-    { month: "Jan", score: 83, reports: 5 },
-    { month: "Feb", score: 87, reports: 4 },
-  ];
+  const correctiveBarData = useMemo(() => {
+    const allPlans = plans as any[];
+    const allPermits = permits as any[];
+    const allIncidents = incidents as any[];
+    const allEquipment = [...(craneInspections as any[]), ...(draegerCalibrations as any[])];
+    return [
+      { name: "Plans", completed: allPlans.filter(p => p.status === "approved").length, inProgress: allPlans.filter(p => p.status === "pending").length, overdue: allPlans.filter(p => p.status === "draft" || p.status === "rejected").length },
+      { name: "Permits", completed: allPermits.filter(p => p.status === "approved").length, inProgress: allPermits.filter(p => p.status === "pending").length, overdue: allPermits.filter(p => p.status === "draft").length },
+      { name: "Incidents", completed: allIncidents.filter(i => i.status === "closed").length, inProgress: allIncidents.filter(i => i.status === "investigating").length, overdue: allIncidents.filter(i => i.status === "open").length },
+      { name: "Equipment", completed: allEquipment.filter((e: any) => e.status === "submitted" || e.calibrationDate).length, inProgress: 0, overdue: allEquipment.filter((e: any) => e.status === "draft").length },
+    ];
+  }, [plans, permits, incidents, craneInspections, draegerCalibrations]);
 
-  const incidentBreakdown = [
-    { name: "Near Miss", value: 3, color: "#6b8cc7" },
-    { name: "Injury", value: 1, color: "#d97770" },
-    { name: "Property", value: 1, color: "#d4a95a" },
-    { name: "Environmental", value: 1, color: "#6bb58e" },
-  ];
+  const incidentsByType = useMemo(() => {
+    const all = incidents as any[];
+    const counts: Record<string, number> = {};
+    all.forEach(i => { counts[i.type] = (counts[i.type] || 0) + 1; });
+    return Object.entries(counts).map(([type, count]) => ({
+      name: INCIDENT_TYPE_LABELS[type] || type,
+      value: count,
+      type,
+    }));
+  }, [incidents]);
 
-  const correctiveBar = [
-    { category: "Plans", open: 4, closed: 8 },
-    { category: "Permits", open: 2, closed: 5 },
-    { category: "Incidents", open: 3, closed: 6 },
-    { category: "Equipment", open: 1, closed: 3 },
-  ];
+  const recentPlans = useMemo(() => {
+    return (plans as any[])
+      .slice()
+      .sort((a, b) => {
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return db - da;
+      })
+      .slice(0, 4);
+  }, [plans]);
 
-  const recentPlans = (plans as any[]).slice(0, 5);
+  const tooltipStyle = {
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+    fontSize: "12px",
+  };
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 max-w-[1400px]">
-      {/* Page heading */}
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Safety Dashboard</h1>
-        <p className="text-muted-foreground text-[13px] mt-0.5">EHS Ireland — Overview</p>
-      </div>
-
-      {/* Row 1: Safety Index + KPI cards */}
-      <div className="grid grid-cols-12 gap-4">
-        {/* Safety Index — calm hero using sidebar blue family */}
-        <Card className="col-span-12 lg:col-span-4 relative overflow-hidden bg-[hsl(225,50%,28%)] text-white border-0">
-          <CardContent className="pt-5 pb-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-white/50 mb-1">Safety Index</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-5xl font-bold tabular-nums text-white">{safetyIndex}</span>
-                  <span className="text-sm text-white/40">/100</span>
-                </div>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <TrendingUp className="h-3 w-3 text-emerald-300/80" />
-                  <span className="text-[11px] text-emerald-300/80">+4.2% from last month</span>
-                </div>
-              </div>
-              <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center">
-                <ShieldCheck className="h-6 w-6 text-white/60" />
-              </div>
-            </div>
-
-            <div className="mt-4 h-1.5 rounded-full bg-white/12 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: `${safetyIndex}%`,
-                  backgroundColor: safetyIndex >= 80 ? '#6ee7b7' : safetyIndex >= 60 ? '#fcd34d' : '#fca5a5',
-                }}
-              />
-            </div>
-            <div className="flex justify-between mt-1 text-[9px] text-white/30">
-              <span>Poor</span><span>Fair</span><span>Good</span><span>Excellent</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* KPI cards — quiet, let data speak */}
-        <div className="col-span-12 lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Active Plans", value: activePlans, icon: ClipboardList, color: "text-blue-500/70", bg: "bg-blue-50/70" },
-            { label: "Open Permits", value: openPermits, icon: FileText, color: "text-amber-500/70", bg: "bg-amber-50/70" },
-            { label: "Open Incidents", value: openIncidents + investigatingIncidents, icon: AlertTriangle, color: "text-red-500/70", bg: "bg-red-50/70" },
-            { label: "Equipment Checks", value: (craneInspections as any[]).length + (calibrations as any[]).length, icon: HardHat, color: "text-emerald-500/70", bg: "bg-emerald-50/70" },
-          ].map((m) => {
-            const Icon = m.icon;
-            return (
-              <Card key={m.label}>
-                <CardContent className="pt-5 pb-4">
-                  <div className={`h-9 w-9 rounded-lg ${m.bg} flex items-center justify-center mb-3`}>
-                    <Icon className={`h-4 w-4 ${m.color}`} />
-                  </div>
-                  <p className="text-2xl font-semibold">{m.value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{m.label}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+    <motion.div
+      className="space-y-4"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      {/* ── Header ── */}
+      <motion.div variants={fadeUp} className="flex items-end justify-between -mt-8">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground font-display leading-tight">
+            Safety Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            EHS Ireland &mdash; Overview
+          </p>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Row 2: Corrective Actions + Health Culture Trend */}
-      <div className="grid grid-cols-12 gap-4">
-        <Card className="col-span-12 lg:col-span-5">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-[13px] font-medium">Corrective Actions</CardTitle>
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground gap-1">
-                View all <ArrowUpRight className="h-3 w-3" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="rounded-lg bg-emerald-50/60 px-3 py-2.5 text-center">
-                <p className="text-lg font-semibold text-emerald-700/80">{correctiveActions.completed}</p>
-                <p className="text-[10px] text-emerald-600/70 font-medium">Completed</p>
-              </div>
-              <div className="rounded-lg bg-amber-50/60 px-3 py-2.5 text-center">
-                <p className="text-lg font-semibold text-amber-700/80">{correctiveActions.inProgress}</p>
-                <p className="text-[10px] text-amber-600/70 font-medium">In Progress</p>
-              </div>
-              <div className="rounded-lg bg-red-50/60 px-3 py-2.5 text-center">
-                <p className="text-lg font-semibold text-red-700/80">{correctiveActions.overdue}</p>
-                <p className="text-[10px] text-red-600/70 font-medium">Overdue</p>
-              </div>
-            </div>
-
-            <ResponsiveContainer width="100%" height={140}>
-              <BarChart data={correctiveBar} barGap={2}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220 10% 92%)" />
-                <XAxis dataKey="category" tick={{ fontSize: 10, fill: "hsl(220 8% 55%)" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(220 8% 55%)" }} axisLine={false} tickLine={false} width={20} />
-                <Tooltip />
-                <Bar dataKey="closed" fill="hsl(225 50% 40%)" radius={[3, 3, 0, 0]} barSize={14} name="Closed" />
-                <Bar dataKey="open" fill="hsl(225 30% 75%)" radius={[3, 3, 0, 0]} barSize={14} name="Open" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-12 lg:col-span-7">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-[13px] font-medium">Health & Safety Culture Trend</CardTitle>
-              <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(225,50%,40%)] inline-block" /> Score
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400/60 inline-block" /> Reports
-                </span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={cultureTrend}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220 10% 92%)" />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(220 8% 55%)" }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="score" tick={{ fontSize: 10, fill: "hsl(220 8% 55%)" }} axisLine={false} tickLine={false} width={28} domain={[50, 100]} />
-                <YAxis yAxisId="reports" orientation="right" tick={{ fontSize: 10, fill: "hsl(220 8% 55%)" }} axisLine={false} tickLine={false} width={28} />
-                <Tooltip />
-                <Area yAxisId="score" type="monotone" dataKey="score" stroke="hsl(225 50% 40%)" fill="hsl(225 50% 40% / 0.08)" strokeWidth={1.5} name="Culture Score" />
-                <Area yAxisId="reports" type="monotone" dataKey="reports" stroke="hsl(40 80% 55%)" fill="hsl(40 80% 55% / 0.06)" strokeWidth={1.5} name="Reports" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Row 3: Incident Breakdown + Recent Plans + Quick Actions */}
-      <div className="grid grid-cols-12 gap-4">
-        <Card className="col-span-12 md:col-span-4 lg:col-span-3">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[13px] font-medium">Incidents by Type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center">
-              <ResponsiveContainer width={140} height={140}>
-                <PieChart>
-                  <Pie data={incidentBreakdown} cx="50%" cy="50%" innerRadius={40} outerRadius={62} paddingAngle={3} dataKey="value">
-                    {incidentBreakdown.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5 mt-2">
-              {incidentBreakdown.map((item) => (
-                <div key={item.name} className="flex items-center gap-1.5 text-[11px]">
-                  <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-muted-foreground truncate">{item.name}</span>
-                  <span className="font-medium ml-auto">{item.value}</span>
+      {/* ── Row 1: Safety Index ── */}
+      <motion.div variants={fadeUp}>
+        <Card className="overflow-hidden relative bg-primary text-primary-foreground border-0">
+          <CardContent className="py-6 px-7 relative z-10">
+            <div className="absolute inset-0 opacity-[0.06] z-0" style={{
+              backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
+              backgroundSize: "18px 18px",
+            }} />
+            {/* Dark overlay for depth */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-white/10 z-0" />
+            <div className="relative z-10 flex items-center gap-6">
+              <div className="flex items-center gap-3 mr-auto">
+                <ShieldCheck className="w-5 h-5 opacity-40" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">Safety Index</p>
+                  <div className="flex items-end gap-1.5">
+                    <span className="text-3xl font-bold font-mono leading-none">{safetyIndex}</span>
+                    <span className="text-sm opacity-40 font-mono mb-0.5">/100</span>
+                  </div>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3 text-emerald-300" />
+                <span className="text-[11px] font-semibold text-emerald-300">+4.2%</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1 w-32">
+                <div className="flex rounded-full overflow-hidden h-1.5 flex-1">
+                  <div className="bg-red-400 flex-1" />
+                  <div className="bg-amber-400 flex-1" />
+                  <div className="bg-emerald-400 flex-1" />
+                  <div className="bg-teal-400 flex-1" />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
+      </motion.div>
 
-        <Card className="col-span-12 md:col-span-8 lg:col-span-5">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-[13px] font-medium">Recent Safety Plans</CardTitle>
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground gap-1">
-                View all <ArrowUpRight className="h-3 w-3" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {recentPlans.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No plans yet.</p>
-            ) : (
-              <div className="space-y-0">
-                {recentPlans.map((p: any, i: number) => (
-                  <div key={p.id} className={`flex items-center justify-between text-sm py-2.5 ${i < recentPlans.length - 1 ? 'border-b border-border/50' : ''}`}>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-[13px] truncate">{p.taskName}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{p.group} · {p.date}</p>
-                    </div>
-                    <Badge variant={p.status === "approved" ? "default" : "secondary"} className="ml-3 shrink-0 text-[10px]">
-                      {p.status}
-                    </Badge>
+      {/* ── Row 2: 5 metric‑action cards ── */}
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3"
+        variants={fadeUp}
+      >
+        {([
+          { href: "/safety-plan", label: "Active Plans", value: activePlans, icon: ClipboardList },
+          { href: "/permit-to-work", label: "Open Permits", value: openPermits, icon: FileText },
+          { href: "/incidents", label: "Incidents", value: openIncidents, icon: AlertTriangle },
+          { href: "/crane-inspection", label: "Crane Checks", value: craneCount, icon: HardHat },
+          { href: "/draeger-calibration", label: "Calibrations", value: draegerCount, icon: TestTube2 },
+        ] as const).map((card) => (
+          <Link key={card.href} href={card.href}>
+            <Card className="border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
+              <CardContent className="p-2 flex flex-col items-center text-center gap-0.5">
+                <div className="p-1 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                  <card.icon className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <p className="text-lg font-bold text-foreground font-mono leading-none">{card.value}</p>
+                <p className="text-[9px] font-medium text-muted-foreground leading-tight">{card.label}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </motion.div>
+
+      {/* ── Row 3: Charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Corrective Actions */}
+        <motion.div variants={fadeUp}>
+          <Card className="shadow-sm h-full">
+            <CardHeader className="pb-2 pt-4 px-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold">Corrective Actions</CardTitle>
+                <Link href="/incidents">
+                  <span className="text-[11px] font-semibold text-primary hover:text-primary/80 flex items-center gap-0.5 cursor-pointer">
+                    View all <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {[
+                  { label: "Completed", value: correctiveActions.completed, color: CHART_COLORS.emerald, bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
+                  { label: "In Progress", value: correctiveActions.inProgress, color: CHART_COLORS.amber, bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400" },
+                  { label: "Overdue", value: correctiveActions.overdue, color: CHART_COLORS.red, bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-700 dark:text-red-400" },
+                ].map(pill => (
+                  <div key={pill.label} className={`flex items-center gap-1.5 rounded-full ${pill.bg} px-2.5 py-1`}>
+                    <span className="text-sm font-bold font-mono" style={{ color: pill.color }}>{pill.value}</span>
+                    <span className={`text-[10px] font-semibold ${pill.text}`}>{pill.label}</span>
                   </div>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <div className="h-[170px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={correctiveBarData} barCategoryGap="20%">
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} allowDecimals={false} width={24} />
+                    <Tooltip contentStyle={{ ...tooltipStyle, background: "hsl(var(--card))", color: "hsl(var(--foreground))" }} />
+                    <Bar dataKey="completed" name="Completed" fill={CHART_COLORS.emerald} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="inProgress" name="In Progress" fill={CHART_COLORS.amber} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="overdue" name="Overdue" fill={CHART_COLORS.red} radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="col-span-12 lg:col-span-4">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-0.5">
-            {[
-              { label: "Create Safety Plan", icon: ClipboardList, href: "/safety-plan", color: "text-muted-foreground" },
-              { label: "New Permit to Work", icon: FileText, href: "/permit-to-work", color: "text-muted-foreground" },
-              { label: "Report Incident", icon: AlertTriangle, href: "/incidents", color: "text-muted-foreground" },
-              { label: "Log Inspection", icon: HardHat, href: "/crane-inspection", color: "text-muted-foreground" },
-              { label: "Draeger Calibration", icon: TestTube2, href: "/draeger-calibration", color: "text-muted-foreground" },
-            ].map((action) => {
-              const Icon = action.icon;
-              return (
-                <a
-                  key={action.label}
-                  href={action.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group"
-                >
-                  <Icon className={`h-3.5 w-3.5 ${action.color} shrink-0`} />
-                  <span className="text-[13px] text-foreground/80">{action.label}</span>
-                  <ArrowUpRight className="h-3 w-3 text-muted-foreground/50 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
-              );
-            })}
-          </CardContent>
-        </Card>
+        {/* Health & Safety Culture Trend */}
+        <motion.div variants={fadeUp}>
+          <Card className="shadow-sm h-full">
+            <CardHeader className="pb-2 pt-4 px-4">
+              <CardTitle className="text-sm font-bold">
+                Health &amp; Safety Culture Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <div className="h-[210px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={cultureTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                    <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} domain={[0, 100]} width={28} />
+                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} width={28} />
+                    <Tooltip contentStyle={{ ...tooltipStyle, background: "hsl(var(--card))", color: "hsl(var(--foreground))" }} />
+                    <Legend verticalAlign="top" align="right" iconType="circle" iconSize={7} wrapperStyle={{ fontSize: "10px", paddingBottom: "8px" }} />
+                    <Line yAxisId="left" type="monotone" dataKey="score" name="Score" stroke={PRIMARY} strokeWidth={2.5} dot={{ r: 3, fill: PRIMARY, stroke: PRIMARY_FG, strokeWidth: 2 }} activeDot={{ r: 5, fill: PRIMARY, stroke: PRIMARY_FG, strokeWidth: 2 }} />
+                    <Line yAxisId="right" type="monotone" dataKey="reports" name="Reports" stroke={CHART_COLORS.orange} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 2.5, fill: CHART_COLORS.orange, stroke: PRIMARY_FG, strokeWidth: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+
+      {/* ── Row 4: Donut + Recent Plans ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Incidents by Type */}
+        <motion.div variants={fadeUp} className="lg:col-span-2">
+          <Card className="shadow-sm h-full">
+            <CardHeader className="pb-1 pt-4 px-4">
+              <CardTitle className="text-sm font-bold">Incidents by Type</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              {incidentsByType.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center">No incidents recorded</p>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="h-[160px] w-[160px] shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={incidentsByType} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                          {incidentsByType.map((entry) => (
+                            <Cell key={entry.type} fill={INCIDENT_TYPE_COLORS[entry.type] || CHART_COLORS.slate} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ ...tooltipStyle, background: "hsl(var(--card))", color: "hsl(var(--foreground))" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                    {incidentsByType.map((entry) => (
+                      <div key={entry.type} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: INCIDENT_TYPE_COLORS[entry.type] || CHART_COLORS.slate }} />
+                        <span className="text-xs text-muted-foreground truncate flex-1">{entry.name}</span>
+                        <span className="text-xs font-bold text-foreground font-mono">{entry.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Recent Safety Plans */}
+        <motion.div variants={fadeUp} className="lg:col-span-3">
+          <Card className="shadow-sm h-full">
+            <CardHeader className="pb-1 pt-4 px-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold">Recent Safety Plans</CardTitle>
+                <Link href="/safety-plan">
+                  <span className="text-[11px] font-semibold text-primary hover:text-primary/80 flex items-center gap-0.5 cursor-pointer">
+                    View all <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="px-0 pb-2 pt-0">
+              <div className="divide-y divide-border">
+                {recentPlans.length === 0 ? (
+                  <p className="text-sm text-muted-foreground px-4 py-4">No safety plans yet</p>
+                ) : (
+                  recentPlans.map((plan: any) => {
+                    const statusStyles: Record<string, { label: string; className: string }> = {
+                      approved: { label: "approved", className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800" },
+                      pending: { label: "pending", className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800" },
+                      draft: { label: "draft", className: "bg-muted text-muted-foreground border-border" },
+                      rejected: { label: "rejected", className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800" },
+                    };
+                    const st = statusStyles[plan.status] || statusStyles.draft;
+                    return (
+                      <Link key={plan.id} href="/safety-plan">
+                        <div className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors cursor-pointer">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-foreground truncate">{plan.taskName || `Plan #${plan.id}`}</p>
+                            <p className="text-[11px] text-muted-foreground">{plan.region || plan.location} &middot; {plan.date}</p>
+                          </div>
+                          <Badge variant="outline" className={`ml-3 shrink-0 text-[10px] font-semibold ${st.className}`}>
+                            {st.label}
+                          </Badge>
+                        </div>
+                      </Link>
+                    );
+                  })
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
