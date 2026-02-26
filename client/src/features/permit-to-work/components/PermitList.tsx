@@ -86,7 +86,7 @@ export function PermitList({ onNew, onView }: Props) {
     <Card className="overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Permit to Work</h1>
+          <h1 className="text-xl font-bold text-gray-900">PtW Overview</h1>
           <p className="text-sm text-muted-foreground">
             Manage and issue work permits &middot; {(permits as any[]).length} record{(permits as any[]).length !== 1 ? "s" : ""}
           </p>

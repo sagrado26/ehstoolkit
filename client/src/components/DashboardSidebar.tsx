@@ -40,7 +40,7 @@ interface NavTreeItem {
   children: NavItem[];
 }
 
-const overviewItem: NavItem = { icon: LayoutDashboard, label: "Overview", href: "/" };
+const overviewItem: NavItem = { icon: LayoutDashboard, label: "Dashboard", href: "/" };
 
 const ispTree: NavTreeItem = {
   icon: ClipboardCheck,
@@ -201,7 +201,7 @@ export default function DashboardSidebar() {
           {isCollapsed && !isMobile ? (
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Link href="/ptw">
+                <Link href="/permit-to-work">
                   <div className="flex items-center justify-center px-2 py-2.5 text-muted-foreground hover-elevate cursor-pointer border-l-4 border-transparent" data-testid="nav-ptw-collapsed">
                     <ptwTree.icon className="w-5 h-5" />
                   </div>

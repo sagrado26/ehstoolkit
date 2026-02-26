@@ -6,95 +6,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, Pencil, Copy, Calendar, ShieldCheck, ShieldAlert,
-  GraduationCap, Beaker, UsersRound, ArrowDownToLine, Shield,
-  Lock, HardHat, Ruler, AlertCircle, Brain, Zap,
-  ClipboardCheck, FileText, History, ChevronDown, ExternalLink,
+  ClipboardCheck, FileText, History, ChevronDown, ExternalLink, Printer,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getHazardInfo } from "../hazard-data";
-import { QUESTION_LABELS } from "../risk-utils";
+import { SAFETY_QUESTIONS, QUESTION_LABELS } from "../risk-utils";
 import type { SafetyPlanFormData } from "../types";
 import SafetyPlanDetail from "@/components/SafetyPlanDetail";
 
-const SAFETY_FLAG_META: Record<string, { icon: any; color: string; bgColor: string; borderColor: string; definition: string }> = {
-  q1_specializedTraining: {
-    icon: GraduationCap,
-    color: "text-violet-600",
-    bgColor: "bg-violet-100",
-    borderColor: "border-violet-200",
-    definition: "This task requires workers to have completed specialized training or certification before proceeding. Ensure all personnel have the required qualifications documented.",
-  },
-  q2_chemicals: {
-    icon: Beaker,
-    color: "text-red-600",
-    bgColor: "bg-red-100",
-    borderColor: "border-red-200",
-    definition: "Chemicals or hazardous materials are present or will be used during this task. Appropriate SDS sheets must be reviewed and proper handling procedures followed.",
-  },
-  q3_impactOthers: {
-    icon: UsersRound,
-    color: "text-sky-600",
-    bgColor: "bg-sky-100",
-    borderColor: "border-sky-200",
-    definition: "This task may impact other workers or work activities in the surrounding area. Coordination with adjacent teams and appropriate notifications are required.",
-  },
-  q4_falls: {
-    icon: ArrowDownToLine,
-    color: "text-rose-600",
-    bgColor: "bg-rose-100",
-    borderColor: "border-rose-200",
-    definition: "There is a risk of falls from height during this task. Fall protection systems, guardrails, or other preventive measures must be in place before work begins.",
-  },
-  q5_barricades: {
-    icon: Shield,
-    color: "text-orange-600",
-    bgColor: "bg-orange-100",
-    borderColor: "border-orange-200",
-    definition: "Barricades or exclusion zones are required to secure the work area. Ensure proper signage and barriers are installed before commencing work.",
-  },
-  q6_loto: {
-    icon: Lock,
-    color: "text-amber-600",
-    bgColor: "bg-amber-100",
-    borderColor: "border-amber-200",
-    definition: "Lock Out / Tag Out procedures are required for this task. All energy sources must be isolated and verified before any maintenance or servicing work begins.",
-  },
-  q7_lifting: {
-    icon: HardHat,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-    borderColor: "border-blue-200",
-    definition: "Heavy lifting operations are involved in this task. Mechanical lifting aids, proper techniques, and adequate personnel must be arranged.",
-  },
-  q8_ergonomics: {
-    icon: Ruler,
-    color: "text-teal-600",
-    bgColor: "bg-teal-100",
-    borderColor: "border-teal-200",
-    definition: "Ergonomic risk factors are present including repetitive motion, awkward postures, or sustained physical effort. Controls and rest breaks should be planned.",
-  },
-  q9_otherConcerns: {
-    icon: AlertCircle,
-    color: "text-pink-600",
-    bgColor: "bg-pink-100",
-    borderColor: "border-pink-200",
-    definition: "Additional safety concerns have been identified that do not fall into standard categories. Review and address these before proceeding.",
-  },
-  q10_headInjury: {
-    icon: Brain,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-100",
-    borderColor: "border-indigo-200",
-    definition: "There is a risk of head injury during this task. Hard hats and appropriate head protection must be worn in the designated work area.",
-  },
-  q11_otherPPE: {
-    icon: Zap,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-100",
-    borderColor: "border-emerald-200",
-    definition: "Additional Personal Protective Equipment beyond standard requirements is needed for this task. Ensure all specified PPE is available and in good condition.",
-  },
-};
+/** Derived lookup from shared SAFETY_QUESTIONS for view metadata */
+const SAFETY_FLAG_META: Record<string, { icon: any; color: string; bgColor: string; borderColor: string; definition: string }> = Object.fromEntries(
+  SAFETY_QUESTIONS.map(q => [q.key, { icon: q.icon, color: q.color, bgColor: q.bgColor, borderColor: q.borderColor, definition: q.definition }])
+);
 
 function formatTimestamp(ts: string | null) {
   if (!ts) return "—";
@@ -200,28 +123,19 @@ export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onStartSRB, onVi
   const activeFlagMeta = flagDialog ? SAFETY_FLAG_META[flagDialog.key] : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mx-auto" style={{ maxWidth: '210mm' }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between no-print">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full hover:bg-white shadow-sm border border-gray-100 h-10 w-10">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900 truncate max-w-[500px]">{plan.taskName}</h1>
-              {plan.id ? <span className="text-gray-400 font-normal">|</span> : null}
-              {plan.id ? <span className="text-brand-teal font-bold uppercase tracking-widest text-sm">ISP-{String(plan.id).padStart(4, "0")}</span> : null}
-            </div>
-            <div className="flex items-center gap-3 mt-1">
-              <Badge variant={plan.status === "approved" ? "default" : "secondary"} className="uppercase font-bold text-[10px]">
-                {plan.status}
-              </Badge>
-              <span className="text-gray-500 font-medium text-xs flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {plan.date}
-              </span>
-            </div>
+            {plan.id ? (
+              <h1 className="text-2xl font-bold text-gray-900">ISP-{String(plan.id).padStart(4, "0")}</h1>
+            ) : (
+              <h1 className="text-2xl font-bold text-gray-900">Safety Plan</h1>
+            )}
           </div>
         </div>
 
@@ -236,6 +150,13 @@ export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onStartSRB, onVi
               <Pencil className="w-4 h-4" /> Edit Plan
             </Button>
           ) : null}
+          <Button
+            variant="outline"
+            className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold gap-2"
+            onClick={() => window.print()}
+          >
+            <Printer className="w-4 h-4" /> Print to PDF
+          </Button>
           {!isTeamMember && onReuse ? (
             <Button onClick={onReuse} variant="outline" className="border-brand-teal text-brand-teal hover:bg-cyan-50 font-bold gap-2">
               <Copy className="w-4 h-4" /> Reuse Template
@@ -244,7 +165,7 @@ export function SafetyPlanView({ plan, onBack, onEdit, onReuse, onStartSRB, onVi
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="print-area bg-white rounded-lg shadow-sm border-2 border-slate-200 overflow-hidden mx-auto" style={{ maxWidth: '210mm' }}>
         <SafetyPlanDetail
           title={plan.taskName}
           status={plan.status === "approved" ? "Active" : "Draft"}

@@ -4,7 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, PenLine, FileText, User, ChevronDown, Check } from "lucide-react";
+import { MultiSelectCombo, type MultiSelectOption } from "@/components/ui/multi-select-combo";
+import { Plus, FileText, User, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSimulatedUsers, type SimulatedUser } from "@/hooks/use-simulated-users";
 import { NameAvatar } from "@/components/ui/name-avatar";
@@ -153,136 +154,89 @@ export function SignOffStep({
   currentUser,
   onChange,
 }: Props) {
-  const [memberInput, setMemberInput] = useState("");
   const { users } = useSimulatedUsers();
 
-  const addMember = () => {
-    const trimmed = memberInput.trim();
-    if (!trimmed || engineers.includes(trimmed)) return;
-    onChange("engineers", [...engineers, trimmed]);
-    setMemberInput("");
-  };
+  // Build option lists for multi-selects
+  const teamOptions: MultiSelectOption[] = users.map(u => ({
+    value: u.name,
+    label: u.name,
+    subtitle: u.role,
+    icon: <NameAvatar name={u.name} className="h-5 w-5 text-[9px]" />,
+  }));
 
-  const handleMemberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addMember();
-    }
-  };
+  const approverOptions: MultiSelectOption[] = users
+    .filter(u => u.role === "Manager" || u.role === "Lead")
+    .map(u => ({
+      value: u.name,
+      label: u.name,
+      subtitle: u.role,
+      icon: <NameAvatar name={u.name} className="h-5 w-5 text-[9px]" />,
+    }));
 
-  const addMemberFromUser = (name: string) => {
-    if (!engineers.includes(name)) {
-      onChange("engineers", [...engineers, name]);
-    }
-  };
+  // Parse approverName as array (comma-separated for backward compat)
+  const approvers = approverName ? approverName.split(",").map(s => s.trim()).filter(Boolean) : [];
 
   const submittedPermits = permits.filter(p => p.status === "approved" || p.status === "pending");
   const linkedPermit = permits.find(p => p.id === linkedPermitId);
 
   return (
     <div className="space-y-4">
-      {/* Compact header */}
-      <div className="flex items-center gap-2">
-        <PenLine className="w-4 h-4 text-primary shrink-0" />
-        <h2 className="text-sm font-semibold text-foreground">Sign Off</h2>
-      </div>
+      {/* Lead picker (single) */}
+      <PeoplePicker
+        label="Lead Name"
+        required
+        value={leadName}
+        onChange={v => onChange("leadName", v)}
+        users={users}
+        filterRoles={["Lead", "Manager"]}
+        placeholder="Search or type lead name"
+        currentUser={currentUser}
+      />
 
-      {/* Lead + Manager side by side */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <PeoplePicker
-          label="Lead Name"
-          required
-          value={leadName}
-          onChange={v => onChange("leadName", v)}
-          users={users}
-          filterRoles={["Lead", "Manager"]}
-          placeholder="Search or type lead name"
-          currentUser={currentUser}
-        />
-        <PeoplePicker
-          label="Manager / Approver"
-          value={approverName}
-          onChange={v => onChange("approverName", v)}
-          users={users}
-          filterRoles={["Manager"]}
-          placeholder="Search or type manager name"
-        />
-      </div>
-
-      {/* Team Members */}
-      <div className="space-y-2">
+      {/* Team Members (multi-select) */}
+      <div className="space-y-1.5">
         <Label className="text-sm font-medium">Team Members</Label>
+        <MultiSelectCombo
+          options={teamOptions}
+          selected={engineers}
+          onChange={v => onChange("engineers", v)}
+          placeholder="Select team members…"
+          searchPlaceholder="Search people…"
+          emptyText="No matching people."
+          renderTag={(opt) => (
+            <span className="flex items-center gap-1.5">
+              <NameAvatar name={opt.label} className="h-4 w-4 text-[8px]" />
+              {opt.label}
+            </span>
+          )}
+        />
+      </div>
 
-        {/* Quick-add from directory */}
-        {users.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {users
-              .filter(u => !engineers.includes(u.name) && u.name !== leadName && u.name !== approverName)
-              .map(u => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => addMemberFromUser(u.name)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                >
-                  <Plus className="h-3 w-3" /> {u.name}
-                </button>
-              ))}
-          </div>
-        )}
-
-        {/* Free-text add */}
-        <div className="flex gap-2">
-          <Input
-            value={memberInput}
-            onChange={e => setMemberInput(e.target.value)}
-            onKeyDown={handleMemberKeyDown}
-            placeholder="Type a name then press Enter or click +"
-            className="text-sm"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={addMember}
-            disabled={!memberInput.trim()}
-            className="shrink-0"
-            title="Add member"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Member chips */}
-        {engineers.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {engineers.map(name => (
-              <span
-                key={name}
-                className="inline-flex items-center gap-1.5 pl-1 pr-1.5 py-1 rounded-full bg-muted border border-border text-sm"
-              >
-                <NameAvatar name={name} className="h-5 w-5 text-[9px]" />
-                <span className="text-foreground/80">{name}</span>
-                <button
-                  type="button"
-                  onClick={() => onChange("engineers", engineers.filter(e => e !== name))}
-                  className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
-                  title={`Remove ${name}`}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+      {/* Approvers (multi-select) */}
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">Approvers</Label>
+        <MultiSelectCombo
+          options={approverOptions}
+          selected={approvers}
+          onChange={v => onChange("approverName", v.join(", "))}
+          placeholder="Select approvers…"
+          searchPlaceholder="Search managers & leads…"
+          emptyText="No matching approvers."
+          renderTag={(opt) => (
+            <span className="flex items-center gap-1.5">
+              <NameAvatar name={opt.label} className="h-4 w-4 text-[8px]" />
+              {opt.label}
+            </span>
+          )}
+        />
       </div>
 
       {/* Manager approval notice */}
-      {!approverName.trim() && (
+      {approvers.length === 0 && (
         <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2.5">
-          <span className="text-amber-500 text-xs mt-0.5">⚠</span>
+          <span className="text-amber-500 text-xs mt-0.5">&#9888;</span>
           <p className="text-xs text-amber-700 dark:text-amber-400">
-            No manager named — the plan will remain <strong>pending</strong> until an approver reviews it. Adding a manager name is recommended.
+            No approver selected — the plan will remain <strong>pending</strong> until an approver reviews it.
           </p>
         </div>
       )}

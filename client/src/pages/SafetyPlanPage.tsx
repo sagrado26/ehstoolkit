@@ -10,11 +10,13 @@ import { PreviewModal } from "@/features/safety-plan/components/PreviewModal";
 import { SafetyPlanList } from "@/features/safety-plan/components/SafetyPlanList";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SafetyPlanFormData, HazardAssessment } from "@/features/safety-plan/types";
 import type { SafetyPlan, Permit } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { SafetyPlanView } from "@/features/safety-plan/components/SafetyPlanView";
 import { getHazardInfo } from "@/features/safety-plan/hazard-data";
+import { QUESTION_KEYS } from "@/features/safety-plan/risk-utils";
 import { Eye } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -41,7 +43,7 @@ function enrichAssessments(
   return result;
 }
 
-const STEP_TITLES = ["", "Task Details", "Safety Questions", "Hazard Identification", "Sign Off"];
+const STEP_TITLES = ["", "Task Details", "Pre-task Assessment", "Hazard Identification", "Sign Off"];
 
 const defaultFormData: SafetyPlanFormData = {
   group: "", taskName: "", date: "", location: "", shift: "", machineNumber: "",
@@ -63,6 +65,7 @@ export default function SafetyPlanPage() {
   const [editingPlanId, setEditingPlanId] = useState<number | null>(null);
   const [reusedFromId, setReusedFromId] = useState<number | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showSkipHazardConfirm, setShowSkipHazardConfirm] = useState(false);
   const [formDirty, setFormDirty] = useState(false);
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -201,13 +204,20 @@ export default function SafetyPlanPage() {
 
   const handleInitialDetailsSubmit = (data: Partial<SafetyPlanFormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
-    setCompletedSteps([1]);
+    setCompletedSteps(prev => Array.from(new Set([...prev, 1])));
     setFormDirty(true);
     setStep(2);
   };
 
   // Validate before advancing to the next step
   const advance = () => {
+    const allPreTaskNo = QUESTION_KEYS.every((k) => (formData as any)[k] === "no");
+
+    if (step === 2 && allPreTaskNo) {
+      setShowSkipHazardConfirm(true);
+      return;
+    }
+
     if (step === 3 && formData.hazards.length === 0) {
       toast({
         title: "No hazards identified",
@@ -336,38 +346,91 @@ export default function SafetyPlanPage() {
       </div>
     );
   }
+  if (step === 1) {
+    return (
+      <>
+        <Dialog open onOpenChange={(open) => { if (!open) requestExit(); }}>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-xl">Task Details</DialogTitle>
+              <DialogDescription>Step 1 of 4</DialogDescription>
+            </DialogHeader>
+            <InitialDetailsStep
+              onSubmit={handleInitialDetailsSubmit}
+              defaultValues={{
+                system: formData.system,
+                group: formData.group,
+                region: formData.region,
+                date: formData.date,
+                canSocialDistance: formData.canSocialDistance,
+              }}
+              editValues={{
+                taskName: formData.taskName,
+                location: formData.location,
+                shift: formData.shift,
+                machineNumber: formData.machineNumber,
+              }}
+              knownValues={knownValues}
+            />
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have unsaved changes on this safety plan. If you exit now, your progress will be lost.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+              <AlertDialogAction onClick={resetForm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Discard & Exit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:min-h-[540px] max-w-6xl mx-auto border border-border rounded-xl overflow-hidden bg-card shadow-sm">
+      {/* Mobile stepper */}
+      <div className="md:hidden mb-4 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <StepperBar
+          variant="mobile"
           currentStep={step}
           completedSteps={completedSteps}
           onStepClick={setStep}
-          prefilled={{ system: formData.system, group: formData.group, region: formData.region, date: formData.date }}
-          taskSummary={{ taskName: formData.taskName, shift: formData.shift, location: formData.location, machineNumber: formData.machineNumber }}
-          onEditDetails={() => setStep(1)}
           onExit={requestExit}
         />
+      </div>
 
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-2xl mx-auto">
-              {/* Content header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+      <div className="flex md:flex-row md:items-start md:justify-center gap-6 min-h-[540px]">
+      {/* Desktop sidebar — compact, no background */}
+      <div className="hidden md:block shrink-0 sticky top-6">
+        <StepperBar
+          variant="desktop"
+          currentStep={step}
+          completedSteps={completedSteps}
+          onStepClick={setStep}
+          taskSummary={{ taskName: formData.taskName, shift: formData.shift, location: formData.location, machineNumber: formData.machineNumber, system: formData.system }}
+          onExit={requestExit}
+        />
+      </div>
+
+      {/* Main form card */}
+      <div className="w-full max-w-2xl flex flex-col rounded-2xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+        <div className="p-6 md:p-8">
+          <div>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
                 <div>
-                  <h2 className="text-lg font-display font-bold text-foreground">{STEP_TITLES[step]}</h2>
-                  <p className="text-xs text-muted-foreground mt-1">Step {step} of 4</p>
+                  <h2 className="text-lg font-semibold text-slate-900">{STEP_TITLES[step]}</h2>
+                  <p className="text-xs text-slate-500 mt-1">Step {step} of 4</p>
                 </div>
               </div>
-              {step === 1 && (
-                <InitialDetailsStep
-                  onSubmit={handleInitialDetailsSubmit}
-                  defaultValues={{ system: formData.system, group: formData.group, region: formData.region, date: formData.date, canSocialDistance: formData.canSocialDistance }}
-                  editValues={editingPlanId ? { taskName: formData.taskName, location: formData.location, shift: formData.shift, machineNumber: formData.machineNumber } : undefined}
-                  knownValues={knownValues}
-                />
-              )}
               {step === 2 && (
                 <SafetyCheckStep values={formData as any} onChange={(key, val) => updateField(key, val)} />
               )}
@@ -438,6 +501,27 @@ export default function SafetyPlanPage() {
             <AlertDialogCancel>Keep Editing</AlertDialogCancel>
             <AlertDialogAction onClick={resetForm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Discard & Exit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showSkipHazardConfirm} onOpenChange={setShowSkipHazardConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Skip Hazard Identification?</AlertDialogTitle>
+            <AlertDialogDescription>
+              No safety risk identified for this action. Are you sure all checks are performed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowSkipHazardConfirm(false)}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowSkipHazardConfirm(false);
+              setCompletedSteps(prev => Array.from(new Set([...prev, 2, 3])));
+              setStep(4);
+            }}>
+              Yes, continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

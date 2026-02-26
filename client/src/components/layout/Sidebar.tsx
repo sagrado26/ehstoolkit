@@ -5,6 +5,7 @@ import {
   HardHat, TestTube2, FolderOpen, Settings, UserCog, ShieldAlert,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTheme, isLightNav } from "@/hooks/use-theme";
 
 const NAV = [
   {
@@ -14,7 +15,7 @@ const NAV = [
   {
     group: "SAFETY",
     items: [
-      { label: "Safety Plan", href: "/safety-plan", icon: ClipboardList },
+      { label: "Safety Plans", href: "/safety-plan", icon: ClipboardList },
       { label: "Safety Review Board", href: "/safety-review-board", icon: ShieldAlert },
       { label: "Permit to Work", href: "/permit-to-work", icon: FileText },
       { label: "Incidents", href: "/incidents", icon: AlertTriangle },
@@ -40,6 +41,16 @@ interface SidebarProps {
 
 export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const [location] = useLocation();
+  const { navColor } = useTheme();
+  const lightNav = isLightNav(navColor);
+
+  const navBg: React.CSSProperties = { backgroundColor: "hsl(var(--nav-primary))" };
+  const textBase = lightNav ? "text-gray-800" : "text-white";
+  const textMuted = lightNav ? "text-gray-500" : "text-gray-400";
+  const textSecondary = lightNav ? "text-gray-600" : "text-gray-300";
+  const borderColor = lightNav ? "border-gray-200" : "border-white/10";
+  const hoverBg = lightNav ? "hover:bg-black/5" : "hover:bg-white/10";
+  const activeBg = lightNav ? "bg-black/5" : "bg-white/10";
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -50,12 +61,12 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const navContent = (
     <>
       {/* Header */}
-      <div className="h-16 flex items-center px-5 border-b border-white/10">
+      <div className={`h-16 flex items-center px-5 border-b ${borderColor}`}>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-brand-signal flex items-center justify-center text-sm font-bold text-white">
+          <div className={cn("w-8 h-8 rounded-md flex items-center justify-center text-sm font-bold", lightNav ? "bg-primary text-primary-foreground" : "bg-white/10 text-white")}>
             S
           </div>
-          <span className="font-bold text-base text-white">EHS Safety</span>
+          <span className={cn("font-bold text-base", textBase)}>EHS Safety</span>
         </div>
       </div>
 
@@ -63,7 +74,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <nav className="mt-4 px-3 space-y-4 flex-1">
         {NAV.map((section) => (
           <div key={section.group}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest px-4 mb-1.5 text-white/30">
+            <p className={cn("text-[10px] font-semibold uppercase tracking-widest px-4 mb-1.5", textMuted)}>
               {section.group}
             </p>
             <div className="space-y-0.5">
@@ -74,21 +85,16 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                   <Link key={item.href} href={item.href}>
                     <a
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors relative",
+                        "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors relative",
                         active
-                          ? "text-white bg-white/10"
-                          : "text-white/60 hover:bg-white/8 hover:text-white/80"
+                          ? cn(textBase, activeBg)
+                          : cn(textSecondary, hoverBg)
                       )}
                     >
                       {active && (
-                        <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-brand-signal rounded-r-md" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-md" />
                       )}
-                      <div className={cn(
-                        "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-                        active ? "bg-brand-signal/20 text-brand-signal" : "bg-white/8 text-white/50"
-                      )}>
-                        <Icon className="w-4 h-4" />
-                      </div>
+                      <Icon className="w-4 h-4" />
                       {item.label}
                     </a>
                   </Link>
@@ -100,20 +106,16 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       </nav>
 
       {/* Bottom Sidebar */}
-      <div className="p-3 border-t border-white/10">
+      <div className={`p-3 border-t ${borderColor}`}>
         <Link href="/admin">
-          <a className="flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors text-white/60 hover:bg-white/8 hover:text-white/80">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-white/8 text-white/50 shrink-0">
-              <UserCog className="w-4 h-4" />
-            </div>
+          <a className={cn("flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors", textSecondary, hoverBg)}>
+            <UserCog className="w-4 h-4" />
             Admin
           </a>
         </Link>
         <Link href="/settings">
-          <a className="flex items-center gap-3 px-4 py-3 text-sm font-sans font-medium rounded-md transition-colors text-white/60 hover:bg-white/8 hover:text-white/80">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-white/8 text-white/50 shrink-0">
-              <Settings className="w-4 h-4" />
-            </div>
+          <a className={cn("flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors", textSecondary, hoverBg)}>
+            <Settings className="w-4 h-4" />
             Settings
           </a>
         </Link>
@@ -125,15 +127,15 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     <>
       {/* Mobile: slide-over sidebar */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={onMobileClose} />
-          <aside className="relative w-64 max-w-[80vw] flex flex-col justify-between h-full shadow-xl bg-gradient-to-b from-brand-dark via-brand to-brand-dark">
+          <aside className={cn("relative w-64 max-w-[80vw] flex flex-col justify-between h-full shadow-xl", lightNav ? "border-r border-gray-200" : "")} style={navBg}>
             {navContent}
           </aside>
         </div>
       )}
 
-      <aside className="hidden md:flex flex-col justify-between h-screen w-64 shadow-xl shrink-0 z-20 bg-gradient-to-b from-brand-dark via-brand to-brand-dark">
+      <aside className={cn("hidden lg:flex flex-col justify-between h-screen w-64 shadow-xl shrink-0 z-20", lightNav ? "border-r border-gray-200" : "")} style={navBg}>
         {navContent}
       </aside>
     </>

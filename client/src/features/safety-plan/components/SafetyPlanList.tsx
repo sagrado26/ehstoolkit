@@ -96,7 +96,7 @@ export function SafetyPlanList({ onNew, onEdit }: Props) {
     <Card className="overflow-hidden border-gray-100 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-border bg-slate-50/50">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Integrated Safety Plans</h1>
+            <h1 className="text-xl font-bold text-gray-900">ISP Overview</h1>
           <p className="text-sm text-muted-foreground">
             Manage and review active risk assessments &middot; {(plans as any[]).length} total
           </p>

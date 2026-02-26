@@ -355,7 +355,7 @@ export default function RecentPtWTable({ compact = false }: RecentPtWTableProps)
                 </button>
               </DialogClose>
             </div>
-            <DialogDescription className="sr-only">Permit to Work Details</DialogDescription>
+            <DialogDescription className="sr-only">Permit to Work (PtW) Details</DialogDescription>
           </DialogHeader>
           {selectedPtW && (
             <ScrollArea className="max-h-[60vh]">

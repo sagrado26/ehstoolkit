@@ -2,9 +2,11 @@ import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ClipboardList, FileText, HardHat, AlertTriangle,
-  ArrowUpRight, TrendingUp, ShieldCheck, TestTube2,
+  ArrowUpRight, TrendingUp, ShieldCheck, TestTube2, Plus, Search,
 } from "lucide-react";
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -158,59 +160,67 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="space-y-4"
+      className="space-y-5"
       variants={stagger}
       initial="hidden"
       animate="show"
     >
-      {/* ── Header ── */}
-      <motion.div variants={fadeUp} className="flex items-end justify-between -mt-8">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground font-display leading-tight">
-            Safety Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            EHS Ireland &mdash; Overview
-          </p>
-        </div>
-      </motion.div>
-
-      {/* ── Row 1: Safety Index ── */}
+      {/* ── Hero + Safety Index merged ── */}
       <motion.div variants={fadeUp}>
-        <Card className="overflow-hidden relative bg-primary text-primary-foreground border-0">
-          <CardContent className="py-6 px-7 relative z-10">
-            <div className="absolute inset-0 opacity-[0.06] z-0" style={{
-              backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
-              backgroundSize: "18px 18px",
-            }} />
-            {/* Dark overlay for depth */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-white/10 z-0" />
-            <div className="relative z-10 flex items-center gap-6">
-              <div className="flex items-center gap-3 mr-auto">
-                <ShieldCheck className="w-5 h-5 opacity-40" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0b1c7f] via-[#0d2f9b] to-[#0d54e5] text-white shadow-xl border border-white/10">
+          <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
+          <div className="absolute inset-y-0 right-[-20%] w-2/3 bg-white/10 blur-3xl" />
+
+          <div className="relative z-10 px-5 sm:px-7 py-6 flex flex-col gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">Safety Index</p>
-                  <div className="flex items-end gap-1.5">
-                    <span className="text-3xl font-bold font-mono leading-none">{safetyIndex}</span>
-                    <span className="text-sm opacity-40 font-mono mb-0.5">/100</span>
-                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">EHS Safety Tracking</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold leading-tight">EHS Safety Tracking</h1>
+                  <p className="text-sm text-white/85 font-semibold flex items-center gap-3 flex-wrap">
+                    <span className="inline-flex items-center gap-2">
+                      <span>Safety Index</span>
+                      <span className="text-white font-mono text-base">{safetyIndex}</span>
+                      <span className="text-white/80 font-mono text-xs">/100</span>
+                    </span>
+                    <span className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full shadow-sm shadow-black/10">
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-100" />
+                      <span className="text-[12px] font-bold text-emerald-100 leading-none">+4.2% improvement</span>
+                      <span className="flex items-center w-20 h-2 rounded-full overflow-hidden border border-white/30">
+                        <span className="flex-1 bg-red-300" />
+                        <span className="flex-1 bg-amber-300" />
+                        <span className="flex-1 bg-emerald-300" />
+                        <span className="flex-1 bg-teal-300" />
+                      </span>
+                    </span>
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 text-emerald-300" />
-                <span className="text-[11px] font-semibold text-emerald-300">+4.2%</span>
-              </div>
-              <div className="hidden sm:flex items-center gap-1 w-32">
-                <div className="flex rounded-full overflow-hidden h-1.5 flex-1">
-                  <div className="bg-red-400 flex-1" />
-                  <div className="bg-amber-400 flex-1" />
-                  <div className="bg-emerald-400 flex-1" />
-                  <div className="bg-teal-400 flex-1" />
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <Input
+                    placeholder="Search safety plans..."
+                    className="pl-9 bg-white/15 border-white/20 text-white placeholder:text-white/70 focus-visible:ring-white/50"
+                  />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
                 </div>
+                <Button asChild className="bg-white text-[#0c1f85] hover:bg-white/90 shadow-md shadow-black/15">
+                  <Link href="/safety-plan">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <Plus className="w-4 h-4" />
+                      New Plan
+                    </span>
+                  </Link>
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+          </div>
+        </div>
       </motion.div>
 
       {/* ── Row 2: 5 metric‑action cards ── */}
@@ -226,13 +236,13 @@ export default function DashboardPage() {
           { href: "/draeger-calibration", label: "Calibrations", value: draegerCount, icon: TestTube2 },
         ] as const).map((card) => (
           <Link key={card.href} href={card.href}>
-            <Card className="border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
-              <CardContent className="p-2 flex flex-col items-center text-center gap-0.5">
-                <div className="p-1 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+            <Card className="border border-white/40 dark:border-border/60 shadow-sm bg-white/70 dark:bg-card/70 backdrop-blur hover:shadow-lg hover:border-primary/40 transition-all cursor-pointer group">
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
                   <card.icon className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <p className="text-lg font-bold text-foreground font-mono leading-none">{card.value}</p>
-                <p className="text-[9px] font-medium text-muted-foreground leading-tight">{card.label}</p>
+                <p className="text-xl font-bold text-foreground font-mono leading-none">{card.value}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground leading-tight">{card.label}</p>
               </CardContent>
             </Card>
           </Link>

@@ -111,11 +111,25 @@ function ComboField({
 }
 
 export function InitialDetailsStep({ onSubmit, defaultValues, editValues, knownValues }: Props) {
-  const [taskPrefix, setTaskPrefix] = useState<string>("");
+  const initialPrefix = (() => {
+    const name = editValues?.taskName || "";
+    const prefix = TASK_PREFIXES.find(p => name.startsWith(`${p} - `));
+    return prefix || "";
+  })();
+
+  const initialName = (() => {
+    const name = editValues?.taskName || "";
+    if (initialPrefix) {
+      return name.replace(`${initialPrefix} - `, "");
+    }
+    return name;
+  })();
+
+  const [taskPrefix, setTaskPrefix] = useState<string>(initialPrefix);
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      taskName: editValues?.taskName || "",
+      taskName: initialName,
       location: editValues?.location || "",
       shift: editValues?.shift || "",
       machineNumber: editValues?.machineNumber || "",

@@ -98,16 +98,11 @@ export function HazardIDStep({ hazards, assessments, onHazardsChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Compact header */}
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="w-4 h-4 text-primary shrink-0" />
-        <h2 className="text-sm font-semibold text-foreground">Hazard Identification</h2>
-        {hazards.length > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-            {hazards.length} identified
-          </span>
-        )}
-      </div>
+      {hazards.length > 0 && (
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary inline-block">
+          {hazards.length} identified
+        </span>
+      )}
 
       {/* Risk matrix legend */}
       <RiskMatrixLegend />

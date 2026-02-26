@@ -1,21 +1,8 @@
 import { cn } from "@/lib/utils";
-import { Shield, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const QUESTIONS = [
-  { key: "q1_specializedTraining", label: "Specialized Training", hint: "Confined space, QEW, H2, Crane Operator certification" },
-  { key: "q2_chemicals", label: "Chemicals / Hazardous Materials", hint: "Task involves chemicals or hazardous substances" },
-  { key: "q3_impactOthers", label: "Other Work in Area", hint: "Other work that may impact this task" },
-  { key: "q4_falls", label: "Fall Hazard", hint: "Falls of 4 feet (1.2m) or greater" },
-  { key: "q5_barricades", label: "Barricades Required", hint: "Trip hazards, floor tile removal" },
-  { key: "q6_loto", label: "LOTO Required", hint: "Lock Out Tag Out procedures" },
-  { key: "q7_lifting", label: "Heavy Lifting", hint: "Items over 35lbs / 15.9kg" },
-  { key: "q8_ergonomics", label: "Ergonomic Concerns", hint: "Abnormal ergonomic situations" },
-  { key: "q10_headInjury", label: "Head Injury Risk", hint: "Hard hat requirements" },
-  { key: "q11_otherPPE", label: "Additional PPE", hint: "Knee pads, cut resistant gloves" },
-  { key: "q9_otherConcerns", label: "Other Safety Concerns", hint: "Additional concerns not listed" },
-];
+import { SAFETY_QUESTIONS } from "../risk-utils";
 
 interface Props {
   values: Record<string, "yes" | "no">;
@@ -23,26 +10,21 @@ interface Props {
 }
 
 export function SafetyCheckStep({ values, onChange }: Props) {
-  const yesCount = QUESTIONS.filter(q => values[q.key] === "yes").length;
+  const yesCount = SAFETY_QUESTIONS.filter(q => values[q.key] === "yes").length;
   const isMobile = useIsMobile();
 
   return (
     <div className="space-y-3">
-      {/* Compact header */}
-      <div className="flex items-center gap-2">
-        <Shield className="w-4 h-4 text-primary shrink-0" />
-        <h2 className="text-sm font-semibold text-foreground">Pretask Safety Check</h2>
-        {yesCount > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
-            {yesCount} flagged
-          </span>
-        )}
-      </div>
+      {yesCount > 0 && (
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 inline-block">
+          {yesCount} flagged
+        </span>
+      )}
 
       {/* Mobile: tappable cards */}
       {isMobile && (
         <div className="space-y-2">
-          {QUESTIONS.map((q, idx) => {
+          {SAFETY_QUESTIONS.map((q, idx) => {
             const flagged = values[q.key] === "yes";
             return (
               <button
@@ -78,7 +60,7 @@ export function SafetyCheckStep({ values, onChange }: Props) {
       {!isMobile && (
         <TooltipProvider delayDuration={200}>
           <div className="rounded-lg border border-border overflow-hidden">
-            {QUESTIONS.map((q, idx) => {
+            {SAFETY_QUESTIONS.map((q, idx) => {
               const val = values[q.key];
               return (
                 <button

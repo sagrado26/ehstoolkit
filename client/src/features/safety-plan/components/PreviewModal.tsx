@@ -161,7 +161,7 @@ export function PreviewModal({ open, onOpenChange, data }: Props) {
                   <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 px-3.5 py-2.5">
                     <FileText className="h-4 w-4 text-amber-600 shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-400">Link to Permit to Work</p>
+                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-400">Link to Permit to Work (PtW)</p>
                       <p className="text-[10px] text-amber-700/70 dark:text-amber-400/60">
                         Required for: {ptwHazards.join(", ")}
                       </p>

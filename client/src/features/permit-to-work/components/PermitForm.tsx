@@ -143,7 +143,7 @@ export function PermitForm({ onSubmit, onCancel, isLoading, permitType }: Props)
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-4 w-4 text-slate-400" />
-            <span className="font-semibold text-sm">Permit to Work</span>
+            <span className="font-semibold text-sm">Permit to Work (PtW)</span>
           </div>
           {hasTypeSpecific && (
             <div className="flex items-center gap-1.5 mb-2">

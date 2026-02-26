@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══ Print styles — only the .print-area card on A4 ═══ */
+@media print {
+  @page { size: A4 portrait; margin: 10mm 12mm; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  body { background: white !important; margin: 0 !important; padding: 0 !important; }
+
+  /* Hide everything that isn't the form */
+  .no-print,
+  nav, header, aside,
+  [data-no-print] { display: none !important; }
+
+  /* Strip layout constraints from all ancestor wrappers */
+  body, body > *, main,
+  main > *, #root, #root > * {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* The plan card itself — clean, borderless, full width */
+  .print-area {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Force grids to keep their multi-column layout when printing */
+  .print-row-2col {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Keep detail grid 6-col and team grid 3-col */
+  .grid-cols-6 { grid-template-columns: repeat(6, 1fr) !important; }
+  .grid-cols-3 { grid-template-columns: repeat(3, 1fr) !important; }
+  .grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; }
+
+  /* Prevent page breaks inside cards */
+  .print-area [class*="rounded-lg"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
 /* Custom styles from HTML theme */
 ::-webkit-scrollbar {
   width: 6px;

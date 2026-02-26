@@ -36,7 +36,7 @@ export type SafetyPlanFormData = {
   // Step 3
   hazards: string[];
   assessments: Record<string, HazardAssessment>;
-  // Linked Permit to Work
+  // Linked Permit to Work (PtW)
   linkedPermitId?: number;
   // Step 4
   leadName: string;
