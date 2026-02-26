@@ -105,7 +105,7 @@ ehs-safety-tool/
 ├── .devcontainer/          # VS Code dev container config
 │   ├── docker-compose.yml  # PostgreSQL + app services
 │   └── devcontainer.json   # Development environment
-├── AI skill/              # Development documentation
+├── docs/                  # Development documentation
 └── package.json           # Dependencies and scripts
 ```
 
@@ -308,7 +308,7 @@ SMTP_PORT=587
 
 ## 📞 Support & Documentation
 
-- **📖 Full Documentation**: See `AI skill/SKILL.md`
+- **📖 Full Documentation**: See `docs/SKILL.md`
 - **🐛 Bug Reports**: Open issues on GitHub
 - **💡 Feature Requests**: Use GitHub Discussions
 - **📧 Contact**: Open a GitHub issue
