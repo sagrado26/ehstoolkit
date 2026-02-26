@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Users, History, ClipboardCheck, FileText, ChevronDown, ExternalLink, ShieldCheck, ShieldAlert, Calendar, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, History, ClipboardCheck, FileText, ChevronDown, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { NameAvatar } from '@/components/ui/name-avatar';
 import { cn } from '@/lib/utils';

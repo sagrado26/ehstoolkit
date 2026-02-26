@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { NameAvatar } from "@/components/ui/name-avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft, Pencil, Copy, Calendar, ShieldCheck, ShieldAlert,
+  ArrowLeft, Pencil, Copy, ShieldCheck, ShieldAlert,
   ClipboardCheck, FileText, History, ChevronDown, ExternalLink, Printer,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
