@@ -37,6 +37,11 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Set up local database
+              run: npx drizzle-kit push
+              env:
+                  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/safetyplan_test
+
             - name: TypeScript type check
               run: npm run check
 
