@@ -261,7 +261,7 @@ export class MemStorage implements IStorage {
   }
 
   private seedPermits() {
-    const samples: Omit<Permit, 'id' | 'createdAt'>[] = [
+    const samples: InsertPermit[] = [
       {
         date: "2025-03-04", submitter: "Declan Foley", manager: "Sarah O'Brien",
         location: "Building 3 - Fab Bay 7", workType: "Hot Work", permitType: "general",
@@ -320,7 +320,7 @@ export class MemStorage implements IStorage {
     ];
     samples.forEach(s => {
       const id = this.nextPermitId++;
-      this.permitsMap.set(id, { ...s, id, createdAt: new Date(Date.now() - Math.random() * 5 * 86400000) });
+      this.permitsMap.set(id, { ...s, id, createdAt: new Date(Date.now() - Math.random() * 5 * 86400000) } as Permit);
     });
   }
 

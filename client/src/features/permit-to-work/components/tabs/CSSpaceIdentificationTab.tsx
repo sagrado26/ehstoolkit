@@ -45,7 +45,7 @@ export function CSSpaceIdentificationTab({ register, control, watch, setValue, o
         </legend>
         <div className="border border-border rounded-md overflow-hidden">
           {SPACE_OPTIONS.map(({ key, label }, idx) => {
-            const checked = spaceId?.[key] ?? false;
+            const checked = (spaceId?.[key] ?? false) as boolean;
             return (
               <button
                 key={key}
