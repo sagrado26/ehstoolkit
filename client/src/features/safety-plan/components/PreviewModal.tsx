@@ -69,9 +69,6 @@ export function PreviewModal({ open, onOpenChange, data }: Props) {
                     </span>
                   ))}
                 </div>
-                {clearedCount > 0 && (
-                  <p className="text-[10px] text-amber-700/60 dark:text-amber-400/60 mt-2">{clearedCount} items cleared</p>
-                )}
               </div>
             ) : (
               <div className="rounded-lg bg-primary/5 border border-primary/15 p-3.5 flex items-center gap-2.5">

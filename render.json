@@ -1,0 +1,10 @@
+{
+    "buildCommand": "npm install && npm run build",
+    "startCommand": "npm run start",
+    "envs": [
+        {
+            "key": "NODE_ENV",
+            "value": "production"
+        }
+    ]
+}

@@ -24,7 +24,14 @@ const PERMIT_TYPES: PermitTypeOption[] = [
     color: "text-brand",
     bgColor: "bg-brand/5",
     borderColor: "border-brand/20 hover:border-brand/50",
-    features: ["O\u2082 Level Monitoring", "Nitrogen Purge Verification", "Entry Supervisor Required", "Standby Person Required"],
+    features: [
+      "Space Identification & Personnel Roles",
+      "Physical & Atmospheric Hazard Assessment",
+      "Tools & Equipment Checklist",
+      "Emergency Extraction Plan",
+      "Gas Measurement Monitoring",
+      "Dual EHS + Manager Sign-off with Signature",
+    ],
   },
   {
     id: "hazardous-space",

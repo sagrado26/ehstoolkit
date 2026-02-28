@@ -47,7 +47,7 @@ const STEP_TITLES = ["", "Task Details", "Pre-task Assessment", "Hazard Identifi
 
 const defaultFormData: SafetyPlanFormData = {
   group: "", taskName: "", date: "", location: "", shift: "", machineNumber: "",
-  region: "Europe - Ireland", system: "Others", canSocialDistance: "yes",
+  region: "Europe - Ireland", system: "EUV", canSocialDistance: "yes",
   q1_specializedTraining: "no", q2_chemicals: "no", q3_impactOthers: "no",
   q4_falls: "no", q5_barricades: "no", q6_loto: "no", q7_lifting: "no",
   q8_ergonomics: "no", q9_otherConcerns: "no", q10_headInjury: "no", q11_otherPPE: "no",

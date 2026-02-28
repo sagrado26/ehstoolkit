@@ -140,9 +140,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [navColor, setNavColorState] = useState<NavColor>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("nav-color") as NavColor) || "slate";
+      const saved = localStorage.getItem("nav-color") as NavColor;
+      if (saved) return saved;
+      // Default: match the theme color (so sidebar follows brand color)
+      const themeColor = (localStorage.getItem("theme-color") as ThemeColor) || "blue";
+      return themeColor as NavColor;
     }
-    return "slate";
+    return "blue";
   });
 
   const [mode, setModeState] = useState<ThemeMode>(() => {

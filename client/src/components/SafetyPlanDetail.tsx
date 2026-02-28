@@ -254,7 +254,7 @@ export default function SafetyPlanDetail({
 
                 {/* Safety Requirements */}
                 <div className="rounded-lg border-2 border-slate-200 overflow-hidden bg-white/50">
-                    <SectionHeader icon={<CheckCircle2 />}>Safety Requirements</SectionHeader>
+                    <SectionHeader icon={<CheckCircle2 />}>Safety Requirements ({safetyConcerns.length}/{safetyConcerns.length + clearedCount})</SectionHeader>
                     <div className="p-3">
                         {safetyConcerns.length === 0 ? (
                             <div className="flex items-center gap-2 text-emerald-600 text-sm font-semibold py-2">
@@ -272,13 +272,10 @@ export default function SafetyPlanDetail({
                                         <div className="w-5 h-5 rounded bg-[#0f766e] text-white flex items-center justify-center shrink-0">
                                             <CheckCircle2 className="h-3.5 w-3.5" />
                                         </div>
-                                        <span className="text-sm font-semibold text-slate-900">{concern.title}</span>
+                                        <span className="text-sm font-medium text-slate-900">{concern.title}</span>
                                     </button>
                                 ))}
                             </div>
-                        )}
-                        {clearedCount > 0 && (
-                            <p className="text-[10px] text-slate-400 mt-2">{clearedCount} item{clearedCount !== 1 ? 's' : ''} cleared</p>
                         )}
                     </div>
                 </div>

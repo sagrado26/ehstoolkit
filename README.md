@@ -1,332 +1,285 @@
-# 🛡️ EHS Safety Tool
+# EHS Safety Tool
 
-A comprehensive Environmental, Health, and Safety (EHS) management platform built for industrial facilities, featuring 6 core safety modules and enterprise-grade functionality.
+A comprehensive Environmental, Health, and Safety (EHS) management platform built for semiconductor manufacturing environments, featuring 7 core safety modules and an ASML-branded design system.
 
-![EHS Safety Tool](https://img.shields.io/badge/Status-Production--Ready-green)
-![License](https://img.shields.io/badge/License-MIT-blue)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue)
-![Codespaces](https://img.shields.io/badge/Codespaces-Supported-purple)
-
-## 🌟 Features
+## Features
 
 ### Core Safety Modules
-- **📋 Safety Plans** - Pre-task hazard assessments with approval workflows
-- **⚠️ Permit to Work** - Work authorization and safety clearance system
-- **🏗️ Crane Inspections** - Equipment safety verification and tracking
-- **🧪 Draeger Calibrations** - Gas detection device maintenance records
-- **🚨 Incident Management** - Safety incident reporting and investigation
-- **📚 Documentation** - Centralized safety document library
+- **Safety Plans (ISP)** — Pre-task hazard assessments with 4-step wizard, risk matrix, and approval workflows
+- **Safety Review Board** — Escalation workflow for high-risk hazards (risk score >= 8)
+- **Permit to Work** — Work authorization for confined space, hot work, electrical, and height operations
+- **Crane Inspections** — Equipment safety verification with buddy-inspector system
+- **Draeger Calibrations** — Gas detection device maintenance and calibration tracking
+- **Incident Management** — Safety incident reporting, investigation, and resolution
+- **Documentation** — Centralized safety document library with SharePoint links
 
-### Technical Features
-- **Full-Stack Application** - React frontend + Express backend
-- **Database** - PostgreSQL with Drizzle ORM
-- **Authentication** - User management with role-based access
-- **Dashboard** - Real-time analytics and safety metrics
-- **Docker Ready** - Containerized for easy deployment
-- **Cloud Development** - GitHub Codespaces support
-- **TypeScript** - Full type safety throughout
+### Technical Highlights
+- Full-stack TypeScript (React + Express)
+- 14 PostgreSQL tables with Drizzle ORM (JSONB for flexible nested data)
+- ASML brand design system (Plus Jakarta Sans, IBM Plex Sans, JetBrains Mono)
+- A4 print-to-PDF for ISP documents
+- Responsive layout with mobile card views
+- Docker + GitHub Codespaces ready
+- CI/CD via GitHub Actions (type check, lint, Docker build)
 
-## 🚀 Quick Start
+## Setup on Laptop
 
-### Option 1: GitHub Codespaces (Recommended - 5 Minutes)
-1. Click the **"Code"** button above
-2. Select **"Codespaces"** tab
-3. Click **"Create codespace on main"**
-4. Wait 2-3 minutes for automatic setup
-5. Click port **5000** in the Ports tab to access the application
+### Prerequisites
 
-**That's it!** No local setup required.
+| Tool | Version | Check | Install |
+|------|---------|-------|---------|
+| **Node.js** | 20 or later | `node -v` | [nodejs.org](https://nodejs.org/) |
+| **npm** | 9 or later | `npm -v` | Comes with Node.js |
+| **Git** | Any | `git --version` | [git-scm.com](https://git-scm.com/) |
 
-### Option 2: Local Development
+> **Database is optional.** The app runs fully in-memory by default with sample data — no PostgreSQL install needed for development. Data resets on server restart.
+
+### Step 1: Clone and install
+
 ```bash
-# Clone the repository
 git clone https://github.com/sagrado26/ehstoolkit.git
-cd ehs-toolkit
-
-# Install dependencies
+cd ehstoolkit
 npm install
+```
 
-# Set up database (choose one option):
+### Step 2: Start the dev server
 
-# Option A: Docker PostgreSQL (Recommended)
-docker-compose -f docker/docker-compose.dev.yml up -d
-export DATABASE_URL="postgresql://postgres:password@localhost:5432/ehs_safety_dev"
-
-# Option B: Local PostgreSQL
-# Install PostgreSQL locally and create database
-export DATABASE_URL="postgresql://user:pass@localhost:5432/ehs_safety"
-
-# Option C: Neon PostgreSQL (Cloud)
-# Create account at neon.tech and get connection string
-export DATABASE_URL="your_neon_connection_string"
-
-# Deploy database schema
-npm run db:push
-
-# Start development server
+```bash
 npm run dev
 ```
 
-Visit `http://localhost:5000` to access the application.
+Open **http://localhost:3000** in your browser. That's it — the app is running with in-memory storage and sample data.
 
-### Option 3: Docker Production
+### Step 3: Log in
+
+Enter any username and password (e.g. `carl.murphy` / `password`). Authentication is a client-side mock — all credentials are accepted. This will be replaced with M365 OAuth when connected to Azure AD.
+
+### (Optional) Connect PostgreSQL for persistent data
+
+If you want data to persist across restarts, connect a PostgreSQL database:
+
 ```bash
-# Clone and navigate to docker directory
-git clone https://github.com/sagrado26/ehstoolkit.git
-cd ehs-toolkit/docker
+# Option A: Docker (recommended if Docker Desktop is installed)
+docker compose -f docker/docker-compose.dev.yml up -d
+export DATABASE_URL="postgresql://postgres:password@localhost:5432/ehs_safety_dev"
+export USE_DATABASE=true
+npm run db:push    # creates tables
+npm run dev
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your production values
+# Option B: Local PostgreSQL
+export DATABASE_URL="postgresql://user:pass@localhost:5432/ehs_safety"
+export USE_DATABASE=true
+npm run db:push
+npm run dev
 
-# Start full stack
-docker-compose -f docker-compose.prod.yml up -d
+# Option C: Neon cloud database (neon.tech)
+export DATABASE_URL="your_neon_connection_string"
+export USE_DATABASE=true
+npm run db:push
+npm run dev
 ```
 
-Visit `http://localhost:5000` to access the application.
+### Alternative: GitHub Codespaces (zero install)
 
-## 🏗️ Project Structure
+1. Go to the repository on GitHub
+2. Click **"Code"** > **"Codespaces"** > **"Create codespace on main"**
+3. Wait 2-3 minutes — everything installs automatically
+4. The app opens on the forwarded port with PostgreSQL already connected
+
+### Alternative: Docker Production
+
+```bash
+cd docker
+cp .env.example .env
+# Edit .env with your database password
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `npm install` fails | Delete `node_modules` and retry: `rm -rf node_modules && npm install` |
+| Port 3000 in use | Set a different port: `PORT=3001 npm run dev` |
+| TypeScript errors | Run `npm run check` to see all type issues |
+| Database won't connect | Check `DATABASE_URL` is correct and PostgreSQL is running |
+| Blank page after login | Clear localStorage: open DevTools > Application > Local Storage > Clear |
+
+## Project Structure
 
 ```
 ehs-safety-tool/
 ├── client/                 # React frontend (Vite)
 │   ├── src/
 │   │   ├── components/     # Reusable UI components (shadcn/ui)
-│   │   ├── features/       # Feature-specific modules (6 safety tools)
-│   │   ├── pages/          # Page components
-│   │   ├── hooks/          # Custom React hooks
+│   │   ├── features/       # Feature modules (7 safety tools)
+│   │   ├── pages/          # Page components (11 routes)
+│   │   ├── hooks/          # Custom React hooks (auth, theme, sidebar)
 │   │   └── lib/            # Utilities and configurations
 ├── server/                 # Express.js backend
-│   ├── routes/             # API route handlers (6 modules)
+│   ├── routes/             # API route handlers (8 modules)
+│   ├── storage.ts          # Data access layer
 │   ├── db.ts               # Database connection
 │   └── index.ts            # Server entry point
 ├── shared/                 # Shared schemas and types
-│   └── schema.ts           # Database schema (10 tables)
+│   └── schema.ts           # Database schema (14 tables)
 ├── .devcontainer/          # VS Code dev container config
-│   ├── docker-compose.yml  # PostgreSQL + app services
-│   └── devcontainer.json   # Development environment
-├── docs/                  # Development documentation
-└── package.json           # Dependencies and scripts
+├── docker/                 # Docker production configs
+├── docs/                   # Development documentation
+├── screenshots/            # Application screenshots
+└── package.json            # Dependencies and scripts
 ```
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
-- **React 18** - Modern UI framework
-- **TypeScript** - Full type safety
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - High-quality component library
-- **TanStack Query** - Powerful data fetching
-- **React Hook Form + Zod** - Form management and validation
-- **Recharts** - Data visualization
-- **Wouter** - Lightweight routing
+- **React 18** + **TypeScript** — UI framework
+- **Vite** — Build tool and dev server
+- **Tailwind CSS 3.4** + **shadcn/ui** — Styling and component library
+- **TanStack Query v5** — Server state and caching
+- **React Hook Form** + **Zod** — Form management and validation
+- **Recharts** — Data visualization (bar, line, donut charts)
+- **Framer Motion** — Page transitions and animations
+- **Wouter** — Lightweight client-side routing
+- **Lucide React** — Icon library
 
 ### Backend
-- **Node.js 20** - JavaScript runtime
-- **Express.js** - Web framework
-- **PostgreSQL** - Robust relational database
-- **Drizzle ORM** - Type-safe database toolkit
-- **Passport.js** - Authentication middleware
-- **WebSocket** - Real-time features
-- **TypeScript** - Backend type safety
+- **Node.js 20** + **Express.js 4** — REST API server
+- **Drizzle ORM** — Type-safe database queries
+- **PostgreSQL 16** — Relational database with JSONB support
+- **Passport.js** — Authentication middleware (M365 OAuth ready)
+- **WebSocket (ws)** — Real-time features
 
-### DevOps & Tools
-- **Docker** - Containerization platform
-- **GitHub Codespaces** - Cloud development environment
-- **ESLint + Prettier** - Code quality and formatting
-- **Drizzle Kit** - Database migrations
-- **tsx** - TypeScript execution
-- **Vite** - Frontend tooling
+### DevOps
+- **Docker** — Multi-stage production builds (Node 22-alpine)
+- **GitHub Actions** — CI pipeline (type check, ESLint, Docker build)
+- **GitHub Codespaces** — Cloud development environment
 
-## 📊 Database Schema
+## Database Schema
 
-The application uses **10 core tables** with comprehensive relationships:
+The application uses **14 tables**:
 
-### Core Safety Tables
-- `safety_plans` - Main safety assessments with hazard analysis
-- `permits` - Work authorization records
-- `crane_inspections` - Equipment safety checks
-- `draeger_calibrations` - Gas detector maintenance
-- `incidents` - Safety event tracking
-- `documents` - Safety document library
+### Safety Tables
+- `safety_plans` — ISP records with JSONB hazards/assessments (30+ fields)
+- `permits` — Permit-to-work records (4 permit types)
+- `permit_gas_measurements` — O2/CO2/CO/H2S/LEL readings
+- `permit_approvals` — Multi-role approval chain
+- `permit_sign_offs` — Digital signatures
+- `srb_records` — Safety Review Board escalations
+- `crane_inspections` — Crane safety checks
+- `draeger_calibrations` — Gas detector calibration records
+- `incidents` — Safety event tracking
+- `documents` — Document library with SharePoint links
 
 ### Supporting Tables
-- `users` - User authentication and profiles
-- `user_preferences` - User settings and preferences
-- `report_list` - Generated safety reports
-- `audit_logs` - Complete action tracking
+- `users` — Authentication (username/password)
+- `user_preferences` — User settings (system, group, site, role)
+- `report_list` — Versioned JSON reports
+- `audit_logs` — Action history with field-level change tracking
 
-### Key Relationships
-- Safety plans generate reports and audit logs
-- Users have preferences and perform actions
-- All safety modules support full CRUD operations
+## API Endpoints
 
-## 🚀 Deployment Options
+| Method | Endpoint | Module |
+|--------|----------|--------|
+| GET | `/api/health` | Health check |
+| GET/POST | `/api/safety-plans` | Safety Plans |
+| PUT | `/api/safety-plans/:id` | Update plan |
+| GET/POST | `/api/permits` | Permits |
+| GET/POST | `/api/crane-inspections` | Crane Inspections |
+| GET/POST | `/api/draeger-calibrations` | Draeger Calibrations |
+| GET/POST | `/api/incidents` | Incidents |
+| GET/POST | `/api/documents` | Documents |
+| GET/POST | `/api/srb-records` | Safety Review Board |
+| GET | `/api/audit-logs` | Audit logs |
+| GET/PUT | `/api/user-preferences/:userId` | User preferences |
 
-### 1. Docker (Recommended for Production)
+## Design System
+
+### ASML Brand Colors
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `brand` | `#0F238C` | Primary — headers, buttons, sidebar |
+| `brand-dark` | `#0A1A6B` | Sidebar gradient |
+| `brand-light` | `#1E3AAF` | Hover/active states |
+| `brand-signal` | `#E8590C` | Alerts, high-impact CTAs |
+| `brand-teal` | `#288498` | Safety badges, ISP section headers |
+
+### Typography
+| Font | Class | Usage |
+|------|-------|-------|
+| Plus Jakarta Sans | `font-display` | Headings, labels |
+| IBM Plex Sans | `font-sans` | Body text (default) |
+| JetBrains Mono | `font-mono` | Data, numbers, codes |
+
+## Scripts
+
 ```bash
-# Production deployment with Docker Compose
-cd docker
-cp .env.example .env
-# Edit .env with your production values
-docker-compose -f docker-compose.prod.yml up -d
-```
-**Cost**: Variable (infrastructure) | **Setup**: 10 minutes
-**Benefits**: Full control, scalable, consistent environments
-
-### 2. Railway (Easiest Full-Stack)
-```bash
-# Connect GitHub repo to Railway
-# Auto-detects Node.js + PostgreSQL
-# One-click deployment
-```
-**Cost**: $5-10/month | **Setup**: 5 minutes
-
-### 3. Render (Managed Services)
-```bash
-# Web Service + PostgreSQL database
-# Auto-deployment from GitHub
-# Built-in SSL and scaling
-```
-**Cost**: $14/month | **Setup**: 10 minutes
-
-### 4. Fly.io (Docker Native)
-```bash
-# Uses existing Docker configuration
-# Global deployment with low latency
-# Advanced scaling options
-```
-**Cost**: $5-15/month | **Setup**: 15 minutes
-
-### 5. DigitalOcean App Platform
-```bash
-# Flexible infrastructure
-# Custom domains and SSL
-# Advanced networking
-```
-**Cost**: $12-25/month | **Setup**: 20 minutes
-
-## 🔧 Development Workflow
-
-### Daily Development (Codespaces)
-```bash
-# Auto-starts with codespace
-npm run dev          # Development server
-# PostgreSQL running # Database ready
+npm run dev        # Start development server (port 3000)
+npm run build      # Production build (Vite + esbuild)
+npm run start      # Run production server
+npm run check      # TypeScript type checking
+npm run db:push    # Deploy database schema changes
 ```
 
-### Database Operations
-```bash
-npm run db:push      # Deploy schema changes
-npm run check        # TypeScript validation
-```
-
-### Code Quality
-```bash
-npm run build        # Production build
-npm run start        # Production server
-```
-
-## 🤝 Contributing
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Development Guidelines
-- Follow TypeScript strict mode
-- Use shadcn/ui components for consistency
-- Maintain modular feature-based structure
-- Add proper error handling and validation
-- Update documentation for new features
-
-## 📝 Environment Variables
-
-Create a `.env` file in the root directory:
+## Environment Variables
 
 ```env
 # Database
 DATABASE_URL=postgresql://user:pass@host:5432/safetyplan
 
 # Security
-SESSION_SECRET=your-super-secure-random-string-here
+SESSION_SECRET=your-secure-random-string
 
 # Application
 NODE_ENV=development
-PORT=5000
-
-# Optional: External Services
-REDIS_URL=redis://localhost:6379
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
+PORT=3000
 ```
 
-## 🐛 Troubleshooting
+## Screenshots
 
-### Codespaces Issues
-- **Won't start**: Check `.devcontainer/` folder exists
-- **App won't load**: Verify port 5000 is forwarded
-- **Database error**: Run `npm run db:push`
+See the [screenshots/](screenshots/) directory for captured views of every page, including:
+- Dashboard (desktop and mobile)
+- Safety Plan list and ISP document view
+- 4-step wizard form
+- Permit to Work, Incidents, Crane Inspection, Draeger Calibration
+- Documentation library
+- Mobile responsive layouts
 
-### Local Development Issues
-- **Port conflict**: Change PORT in `.env`
-- **Database connection**: Verify DATABASE_URL
-- **Dependencies**: Run `rm -rf node_modules && npm install`
+## Roadmap
 
-### Build Issues
-- **TypeScript errors**: Run `npm run check`
-- **Build fails**: Clear cache with `npm run build -- --force`
+### Near-term (In Progress)
+- [ ] **M365 OAuth Authentication** — Azure AD single sign-on (implementation prepped in `server/config/`, ready to enable)
+- [ ] **SharePoint Integration** — Connect document library to live SharePoint site for real-time document sync
+- [ ] **Email Notifications** — SMTP-based alerts for permit approvals, SRB escalations, and overdue actions
+- [ ] **Unit & E2E Testing** — Vitest for unit tests, Playwright for end-to-end browser testing
 
-## 📊 Performance & Monitoring
+### Mid-term
+- [ ] **Real-time Notifications** — WebSocket push for live approval status updates and SRB alerts
+- [ ] **Advanced Reporting** — Custom dashboard builder with exportable PDF/Excel reports
+- [ ] **Audit Dashboard** — Dedicated admin view for compliance audit trail and change history
+- [ ] **Role-based Access Control** — Granular permissions per module (viewer, editor, approver, admin)
+- [ ] **PostgreSQL Full Deployment** — Migrate from in-memory fallback to persistent PostgreSQL in production
 
-- **Health Check**: `GET /health` endpoint
-- **Error Logging**: Winston-based logging system
-- **Database Monitoring**: Connection pooling with Drizzle
-- **Caching**: React Query for frontend state
-- **Build Optimization**: Vite tree-shaking and code splitting
+### Long-term
+- [ ] **Mobile Companion App** — React Native app for on-site inspections and offline form submission
+- [ ] **Offline Mode (PWA)** — Progressive Web App with service worker for areas with poor connectivity
+- [ ] **Multi-tenant Support** — Organization-level data isolation for multi-site deployments
+- [ ] **Analytics & ML** — Trend prediction for incident rates, risk scoring recommendations
+- [ ] **Third-party Integrations** — SAP, ServiceNow, and BMS system connectors
 
-## 🔒 Security Features
+## Contributing
 
-- **Input Validation**: Zod schemas throughout
-- **SQL Injection Protection**: Parameterized queries
-- **Authentication**: Passport.js with session management
-- **Authorization**: Role-based access control
-- **HTTPS**: SSL/TLS encryption
-- **Security Headers**: Helmet.js middleware
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes
+4. Push and open a Pull Request
 
-## 📈 Roadmap
+### Guidelines
+- Follow TypeScript strict mode
+- Use shadcn/ui components for consistency
+- Maintain modular feature-based structure
+- Add Zod validation on API endpoints
 
-- [ ] **Mobile App** - React Native companion
-- [ ] **Advanced Analytics** - ML-powered insights
-- [ ] **Integration APIs** - Third-party system connections
-- [ ] **Multi-tenant Support** - Organization management
-- [ ] **Offline Mode** - Progressive Web App features
-- [ ] **Advanced Reporting** - Custom dashboard builder
+## License
 
-## 📞 Support & Documentation
-
-- **📖 Full Documentation**: See `docs/SKILL.md`
-- **🐛 Bug Reports**: Open issues on GitHub
-- **💡 Feature Requests**: Use GitHub Discussions
-- **📧 Contact**: Open a GitHub issue
-
-## 📝 License
-
-This project is licensed under the **MIT License** - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **shadcn/ui** - Beautiful component library
-- **Drizzle ORM** - Excellent database toolkit
-- **Railway** - Amazing deployment platform
-- **GitHub Codespaces** - Revolutionary development environment
-
----
-
-**Built for industrial safety management with enterprise-grade features and cloud-native architecture.** 🛡️🏭
-
-*Developed with TypeScript, Docker, and modern web technologies for reliable, scalable safety management.*</content>
-<parameter name="filePath">c:\Users\carl\Downloads\EHS Safety Tool\README.md
+This project is licensed under the MIT License.

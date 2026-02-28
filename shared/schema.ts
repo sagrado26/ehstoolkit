@@ -218,6 +218,43 @@ export const permits = pgTable("permits", {
   srbSecondaryRoute: text("srb_secondary_route"),
   srbAssemblyPoint: text("srb_assembly_point"),
   srbEmergencyContact: text("srb_emergency_contact"),
+
+  // ── NEW: General Info fields ──
+  requestorPhone: text("requestor_phone"),
+  serviceOrderNumber: text("service_order_number"),
+  procedureName: text("procedure_name"),
+  customerFab: text("customer_fab"),
+  machineType: text("machine_type"),
+  machineNumber: text("machine_number"),
+  customerNotified: text("customer_notified"),
+  customerContactName: text("customer_contact_name"),
+  customerContactPhone: text("customer_contact_phone"),
+  activityDurationHours: text("activity_duration_hours"),
+  expectedStartDate: text("expected_start_date"),
+  expectedStartTime: text("expected_start_time"),
+  expectedEndDate: text("expected_end_date"),
+  expectedEndTime: text("expected_end_time"),
+  multipleShifts: text("multiple_shifts"),
+
+  // ── NEW: Confined Space — Personnel ──
+  attendants: text("attendants"),
+  entrants: text("entrants"),
+  atmosphericTester: text("atmospheric_tester"),
+  extractionPlanReviewed: text("extraction_plan_reviewed"),
+  ertContactInfo: text("ert_contact_info"),
+
+  // ── NEW: Confined Space — JSONB columns ──
+  spaceIdentification: jsonb("space_identification"),
+  communicationMethod: jsonb("communication_method"),
+  physicalHazards: jsonb("physical_hazards"),
+  atmosphericHazards: jsonb("atmospheric_hazards"),
+  toolsChecklist: jsonb("tools_checklist"),
+  extractionSituations: jsonb("extraction_situations"),
+  extractionMethods: jsonb("extraction_methods"),
+  extractionEquipment: jsonb("extraction_equipment"),
+  medicalEquipment: jsonb("medical_equipment"),
+  enhancedSignOff: jsonb("enhanced_sign_off"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

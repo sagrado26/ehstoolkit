@@ -48,10 +48,23 @@
   .grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; }
 
   /* Prevent page breaks inside cards */
-  .print-area [class*="rounded-lg"] {
+  .print-area [class*="rounded-lg"],
+  .print-area [class*="rounded-md"],
+  section {
     break-inside: avoid;
     page-break-inside: avoid;
   }
+
+  /* Permit form print: hide sidebar, show all tabs */
+  .print\:hidden { display: none !important; }
+  .print\:block { display: block !important; }
+  .print\:border-0 { border: none !important; }
+  .print\:rounded-none { border-radius: 0 !important; }
+  .print\:max-w-none { max-width: none !important; }
+  .print\:p-0 { padding: 0 !important; }
+
+  /* Ensure border colors print */
+  .border-border { border-color: #e2e8f0 !important; }
 }
 
 /* Custom styles from HTML theme */
