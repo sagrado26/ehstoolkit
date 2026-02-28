@@ -15,6 +15,7 @@ let nanoid: any = null;
 async function initializeVite() {
   if (process.env.NODE_ENV === "development") {
     const vite = await import("vite");
+    // @ts-ignore - vite.config.js is intentionally JavaScript; result is typed as any
     const config = await import("../vite.config");
     const nano = await import("nanoid");
 
