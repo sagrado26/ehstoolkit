@@ -57,7 +57,7 @@ export function CSSpaceIdentificationTab({ register, control, watch, setValue, o
                   checked ? "bg-brand/[0.03]" : "hover:bg-muted/20"
                 )}
               >
-                <InlineCheck checked={checked} onClick={() => { }} />
+                <InlineCheck checked={!!checked} onClick={() => { }} />
                 <span>{label}</span>
               </button>
             );
